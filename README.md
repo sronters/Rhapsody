@@ -1,20 +1,21 @@
 <div align="center">
-<img src="https://capsule-render.vercel.app/api?type=waving&height=180&color=0:111827,45:4F46E5,100:7C3AED&text=Rhapsody&fontColor=FFFFFF&fontSize=52&fontAlignY=36&desc=Telegram-native%20team%20memory&descAlignY=58&descSize=18" />
-<br />
-<img src="https://readme-typing-svg.demolab.com?font=Space+Mono&size=22&duration=2600&pause=900&color=A78BFA&center=true&vCenter=true&width=850&lines=Chats+%E2%86%92+Meetings+%E2%86%92+Tasks+%E2%86%92+Decisions;Voice+notes+%E2%86%92+Transcripts+%E2%86%92+Team+memory;Ask+what+your+team+already+knows" />
-<br />
-<br />
+<img src="https://readme-typing-svg.demolab.com?font=Space+Mono&size=42&duration=2600&pause=900&color=8B5CF6&center=true&vCenter=true&width=900&lines=Rhapsody;Telegram-native+team+memory;Chats+%E2%86%92+Meetings+%E2%86%92+Tasks;Ask+your+team+history" />
+<br>
+<p>
+  <strong>Telegram-first память для команд.</strong>
+</p>
+<p>
+  Rhapsody помогает сохранять рабочий контекст из чатов, встреч, документов и голосовых сообщений.
+</p>
+<br>
 <img src="https://img.shields.io/badge/FastAPI-111827?style=for-the-badge&logo=fastapi&logoColor=00E0B8" />
-<img src="https://img.shields.io/badge/PostgreSQL_+_pgvector-1E293B?style=for-the-badge&logo=postgresql&logoColor=60A5FA" />
+<img src="https://img.shields.io/badge/PostgreSQL-1E293B?style=for-the-badge&logo=postgresql&logoColor=60A5FA" />
 <img src="https://img.shields.io/badge/Telegram-075985?style=for-the-badge&logo=telegram&logoColor=FFFFFF" />
 <img src="https://img.shields.io/badge/Docker-1D4ED8?style=for-the-badge&logo=docker&logoColor=FFFFFF" />
 <img src="https://img.shields.io/badge/Whisper-4C1D95?style=for-the-badge&logo=openai&logoColor=C4B5FD" />
-<img src="https://img.shields.io/badge/Gemini-312E81?style=for-the-badge&logo=googlegemini&logoColor=A5B4FC" />
-<br />
-<br />
-<img src="https://capsule-render.vercel.app/api?type=rect&height=2&color=0:38BDF8,50:A78BFA,100:F472B6" />
 </div>
-<br />
+
+⸻
 
 Rhapsody
 
@@ -22,7 +23,6 @@ Rhapsody — бот для команд в Telegram.
 
 Он помогает сохранять рабочий контекст из чатов, встреч, документов и голосовых сообщений. После этого у бота можно спросить, что обсуждали, какие решения приняли, кто что должен сделать и где это было сказано.
 
-<div align="center">
 Telegram group
    ↓
 chats · meetings · docs · voice · images
@@ -30,7 +30,6 @@ chats · meetings · docs · voice · images
 Rhapsody
    ↓
 tasks · decisions · risks · cited answers
-</div>
 
 Что умеет
 
@@ -41,8 +40,6 @@ tasks · decisions · risks · cited answers
 * выделяет summary, задачи, дедлайны, решения и риски;
 * отвечает на вопросы по памяти команды;
 * показывает задачи, решения, аудит и статус системы.
-
-⸻
 
 Основной интерфейс
 
@@ -70,32 +67,12 @@ tasks · decisions · risks · cited answers
 
 Он работает через отдельный listener на MTProto/user session. Это не обычный Telegram Bot API, поэтому live-call режим нужно проверять отдельно в реальном групповом звонке.
 
-⸻
-
 Стек
-
-<div align="center">
 
 Backend	Data	Telegram	AI / STT	Runtime
 FastAPI	PostgreSQL + pgvector	aiogram 3	Gemini	Docker Compose
 SQLAlchemy 2.0	Redis	MTProto listener	OpenAI	MinIO
 Alembic	Celery	Telethon / Pyrogram	OpenRouter / Ollama	faster-whisper
-
-</div>
-
-* FastAPI
-* PostgreSQL + pgvector
-* Redis
-* Celery
-* MinIO
-* SQLAlchemy 2.0
-* Alembic
-* aiogram 3
-* Gemini / OpenAI / OpenRouter / Ollama
-* faster-whisper
-* Docker Compose
-
-⸻
 
 Быстрый запуск
 
@@ -112,8 +89,6 @@ docker compose ps
 curl http://localhost:8000/api/v1/health
 curl http://localhost:8000/api/v1/ready
 
-⸻
-
 Минимальная настройка для Telegram
 
 В .env нужно указать токен бота и AI provider.
@@ -129,8 +104,6 @@ VISION_MODE=gemini
 
 docker compose up --build -d
 docker compose logs bot --tail=100
-
-⸻
 
 Голосовые сообщения и аудио
 
@@ -150,8 +123,6 @@ LOCAL_WHISPER_MODEL=medium
 
 LOCAL_WHISPER_LANGUAGE=
 
-⸻
-
 Документы и медиа
 
 Rhapsody принимает:
@@ -169,7 +140,6 @@ Rhapsody принимает:
 
 Audio/video при необходимости прогоняются через ffmpeg.
 
-<div align="center">
 file / image / audio / video
         ↓
 download
@@ -179,9 +149,6 @@ parse / OCR / STT
 memory chunks
         ↓
 /ask with sources
-</div>
-
-⸻
 
 Live calls
 
@@ -207,8 +174,6 @@ docker compose --profile listener up --build -d
 
 Live-call режим считается рабочим только после ручной проверки: listener account вошёл в звонок, аудио записалось, transcript появился, бот отправил отчёт, а /ask смог ответить по этой встрече.
 
-⸻
-
 Разработка
 
 python -m venv .venv
@@ -216,8 +181,6 @@ python -m venv .venv
 pip install -e ".[dev]"
 python -m pytest
 uvicorn app.main:create_app --factory --reload
-
-⸻
 
 Проверки
 
@@ -234,15 +197,11 @@ docker compose --profile listener build
 docker compose --profile listener up -d
 docker compose logs listener --tail=200
 
-⸻
-
 Режимы запуска
 
 * cloud — ключи AI provider задаются на стороне продукта;
 * byok — организация использует свои ключи;
 * private — self-hosted запуск с локальными моделями, MinIO и собственной базой.
-
-⸻
 
 Текущий статус
 
@@ -250,7 +209,8 @@ docker compose logs listener --tail=200
 
 Live-call режим вынесен отдельно. Его нельзя считать готовым, пока он не пройдёт ручной тест в реальном Telegram group call.
 
-<br />
+⸻
+
 <div align="center">
-<img src="https://capsule-render.vercel.app/api?type=waving&height=120&section=footer&color=0:7C3AED,50:2563EB,100:0F172A" />
-   </div>
+Rhapsody remembers what the team forgets.
+</div>
