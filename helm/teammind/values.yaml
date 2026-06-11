@@ -1,0 +1,29 @@
+image:
+  repository: teammind/api
+  tag: latest
+  pullPolicy: IfNotPresent
+
+api:
+  replicas: 2
+  service:
+    type: ClusterIP
+    port: 8000
+
+worker:
+  replicas: 2
+
+env:
+  DEPLOYMENT_MODE: private
+  DATABASE_URL: postgresql+asyncpg://teammind:teammind@postgres:5432/teammind
+  REDIS_URL: redis://redis:6379/0
+  S3_BUCKET: teammind
+  LOCAL_LLM_BASE_URL: http://ollama:11434
+
+vault:
+  enabled: true
+  address: http://vault:8200
+
+monitoring:
+  prometheus: true
+  grafana: true
+  loki: true
