@@ -40,7 +40,7 @@ SETUP_REQUIRED = "This chat is not connected yet. Run /setup first."
 @router.message(Command("start"))
 async def start(message: Message) -> None:
     await message.answer(
-        "Welcome to TeamMind. I turn team communication, meetings, and documents into "
+        "Welcome to Rhapsody. I turn team communication, meetings, and documents into "
         "searchable operating memory.\n\n"
         f"{HELP_TEXT}\n\nRun /setup first if this chat is not connected yet."
     )
@@ -362,7 +362,7 @@ async def stop_listen(message: Message) -> None:
             await message.answer(SETUP_REQUIRED)
             return
         try:
-            await message.answer("TeamMind stopped listening and is generating the meeting report.")
+            await message.answer("Rhapsody stopped listening and is generating the meeting report.")
             result = await LiveMeetingListenerService(session).stop_listening(
                 context,
                 message.chat.id,

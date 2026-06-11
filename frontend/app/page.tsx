@@ -15,7 +15,7 @@ export default function AdminHome() {
     <main className="min-h-screen p-8">
       <section className="mx-auto max-w-6xl">
         <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">Enterprise Console</p>
-        <h1 className="mt-4 text-4xl font-bold text-white">TeamMind Admin</h1>
+        <h1 className="mt-4 text-4xl font-bold text-white">Rhapsody Admin</h1>
         <p className="mt-3 max-w-2xl text-slate-300">
           Operator surface for tenant management, AI provider controls, audit review, and private
           deployment settings.

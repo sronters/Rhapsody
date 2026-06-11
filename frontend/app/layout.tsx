@@ -3,8 +3,8 @@ import './globals.css'
 import type { ReactNode } from 'react'
 
 export const metadata = {
-  title: 'TeamMind Admin',
-  description: 'Enterprise admin console for TeamMind',
+  title: 'Rhapsody Admin',
+  description: 'Enterprise admin console for Rhapsody',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {

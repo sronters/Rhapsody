@@ -82,12 +82,12 @@ class LiveMeetingListenerService:
                 return LiveListenStart(
                     session_id=started.id,
                     message=(
-                        "TeamMind is now listening to this call and will generate meeting notes."
+                        "Rhapsody is now listening to this call and will generate meeting notes."
                     ),
                 )
             return LiveListenStart(
                 session_id=existing.id,
-                message="TeamMind is already listening to this group's active call.",
+                message="Rhapsody is already listening to this group's active call.",
             )
 
         live_session = LiveMeetingSession(
@@ -111,7 +111,7 @@ class LiveMeetingListenerService:
             started = await self._wait_for_terminal_start(live_session.id)
             return LiveListenStart(
                 session_id=started.id,
-                message="TeamMind is now listening to this call and will generate meeting notes.",
+                message="Rhapsody is now listening to this call and will generate meeting notes.",
             )
 
         await self.process_start_request(live_session.id)
@@ -120,7 +120,7 @@ class LiveMeetingListenerService:
             raise ListenerJoinError(live_session.error_message or "Live listener failed to start.")
         return LiveListenStart(
             session_id=live_session.id,
-            message="TeamMind is now listening to this call and will generate meeting notes.",
+            message="Rhapsody is now listening to this call and will generate meeting notes.",
         )
 
     async def process_start_request(self, live_session_id: UUID) -> None:
@@ -166,7 +166,7 @@ class LiveMeetingListenerService:
     ) -> LiveListenStop:
         live_session = await self._active_session(context.workspace_id, telegram_chat_id)
         if live_session is None:
-            raise ListenerConfigurationError("TeamMind is not listening to a call in this group.")
+            raise ListenerConfigurationError("Rhapsody is not listening to a call in this group.")
 
         if live_session.status in {"stop_requested", "stopping", "transcribing", "analyzing"}:
             completed = await self._wait_for_terminal_stop(live_session.id)
@@ -267,7 +267,7 @@ class LiveMeetingListenerService:
         if live_session is None:
             return LiveListenStatus(
                 active=False,
-                message="TeamMind is not listening in this group.",
+                message="Rhapsody is not listening in this group.",
             )
         if not self.inline_runtime:
             return LiveListenStatus(

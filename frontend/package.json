@@ -1,5 +1,5 @@
 {
-  "name": "teammind-admin",
+  "name": "rhapsody-admin",
   "private": true,
   "scripts": {
     "dev": "next dev",

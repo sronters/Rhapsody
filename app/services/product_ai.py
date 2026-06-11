@@ -226,6 +226,6 @@ def build_memory_answer_prompt(question: str, sources: list[MemorySource]) -> st
         for index, source in enumerate(sources, start=1)
     )
     return (
-        "Answer the question using only the provided TeamMind sources. Cite source numbers.\n\n"
+        "Answer the question using only the provided Rhapsody sources. Cite source numbers.\n\n"
         f"Sources:\n{source_text}\n\nQuestion: {question}\nAnswer:"
     )

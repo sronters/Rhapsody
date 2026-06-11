@@ -16,7 +16,7 @@ def test_memory_prompt_requires_grounding_and_citations() -> None:
         "Why did we choose supplier X?", "[1] decision: Supplier X"
     )
 
-    assert "Answer only from the TeamMind memory context" in prompt
+    assert "Answer only from the Rhapsody memory context" in prompt
     assert "Cite source numbers" in prompt
     assert "Supplier X" in prompt
 

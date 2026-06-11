@@ -16,7 +16,7 @@ from app.services.document_parsing import (
 
 
 def test_extract_plain_text_document() -> None:
-    assert extract_text_from_document(b"Hello TeamMind", "note.txt") == "Hello TeamMind"
+    assert extract_text_from_document(b"Hello Rhapsody", "note.txt") == "Hello Rhapsody"
 
 
 def test_extract_csv_text_formats_rows() -> None:

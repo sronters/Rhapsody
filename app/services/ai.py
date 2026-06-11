@@ -49,12 +49,12 @@ class LLMProvider(ABC):
 
 class DeterministicLocalProvider(LLMProvider):
     name = "deterministic-local"
-    default_model = "teammind-rules-v1"
+    default_model = "rhapsody-rules-v1"
 
     async def generate(self, request: LLMRequest) -> LLMResponse:
         started = time.perf_counter()
         text = (
-            "I found relevant TeamMind memory. Use the cited sources below as the "
+            "I found relevant Rhapsody memory. Use the cited sources below as the "
             "ground truth before making operational decisions."
         )
         return LLMResponse(

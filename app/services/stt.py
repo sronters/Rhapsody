@@ -107,7 +107,7 @@ class SpeechToTextService:
                 "use STT_MODE=openai."
             ) from exc
 
-        with tempfile.TemporaryDirectory(prefix="teammind-stt-") as temp_dir:
+        with tempfile.TemporaryDirectory(prefix="rhapsody-stt-") as temp_dir:
             input_path = Path(temp_dir) / f"input{suffix}"
             output_path = Path(temp_dir) / "normalized.wav"
             input_path.write_bytes(content)

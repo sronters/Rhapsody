@@ -1,10 +1,10 @@
-# TeamMind Architecture and Current State
+# Rhapsody Architecture and Current State
 
 Last reviewed: 2026-06-10
 
 ## 1. Executive Summary
 
-TeamMind is a production-oriented FastAPI backend for a Telegram-native AI operating system for teams. Its purpose is to turn meetings, Telegram chats, documents, decisions, tasks, risks, and follow-ups into a tenant-isolated company memory that can answer questions with citations.
+Rhapsody is a production-oriented FastAPI backend for a Telegram-native AI operating system for teams. Its purpose is to turn meetings, Telegram chats, documents, decisions, tasks, risks, and follow-ups into a tenant-isolated company memory that can answer questions with citations.
 
 The repository is best described as a strong backend foundation and local/private deployment scaffold, not a complete end-user product yet. It already contains modular domain boundaries, async SQLAlchemy persistence, Alembic migrations, pgvector-ready memory chunks, AI provider routing, BYOK key encryption, RBAC helpers, audit logs, deterministic local AI fallbacks, Docker Compose infrastructure, a thin Celery worker boundary, a placeholder Next.js admin console, Helm skeletons, and a meaningful unit/integration test suite.
 
@@ -292,7 +292,7 @@ docs/
 frontend/
   app/                     Next.js app router shell
 helm/
-  teammind/                Kubernetes/Helm skeleton
+  rhapsody/                Kubernetes/Helm skeleton
 migrations/
   versions/                Alembic migrations
 scripts/                   Backup/restore and integration-test helper scripts
@@ -482,7 +482,7 @@ Operational routes generally require:
 
 ### Cloud mode
 
-TeamMind-operated infrastructure and TeamMind-managed AI provider keys. Recommended stack includes managed Postgres with pgvector, Redis, S3/R2, and hosted API/worker runtime.
+Rhapsody-operated infrastructure and Rhapsody-managed AI provider keys. Recommended stack includes managed Postgres with pgvector, Redis, S3/R2, and hosted API/worker runtime.
 
 ### BYOK mode
 
@@ -525,7 +525,7 @@ python -m ruff check . --no-cache
 python -c "from app.main import create_app; app=create_app(); print(app.title, len(app.routes))"
 ```
 
-Integration tests are located under `tests/integration`. They require `TEAMMIND_INTEGRATION_DATABASE_URL` and are intended for a real Postgres + pgvector database. Use `scripts/run-integration-tests.ps1` for the Docker Postgres path.
+Integration tests are located under `tests/integration`. They require `RHAPSODY_INTEGRATION_DATABASE_URL` and are intended for a real Postgres + pgvector database. Use `scripts/run-integration-tests.ps1` for the Docker Postgres path.
 
 ## 15. Known Constraints and Risks
 

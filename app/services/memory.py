@@ -80,7 +80,7 @@ class MemoryService:
 
 def build_grounded_memory_prompt(question: str, context: str) -> str:
     return (
-        "Answer only from the TeamMind memory context. If the context is insufficient, "
+        "Answer only from the Rhapsody memory context. If the context is insufficient, "
         "say that clearly. Cite source numbers in every factual claim.\n\n"
         f"Context:\n{context or 'No context available.'}\n\nQuestion: {question}\nAnswer:"
     )

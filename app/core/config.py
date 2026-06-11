@@ -17,12 +17,12 @@ VisionMode = Literal["openai", "gemini"]
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    app_name: str = "TeamMind"
+    app_name: str = "Rhapsody"
     environment: Environment = "development"
     deployment_mode: DeploymentMode = "cloud"
     ai_mode: AIMode | None = None
     api_base_url: str = "http://localhost:8000"
-    database_url: str = "postgresql+asyncpg://teammind:teammind@localhost:5432/teammind"
+    database_url: str = "postgresql+asyncpg://rhapsody:rhapsody@localhost:5432/rhapsody"
     redis_url: str = "redis://localhost:6379/0"
     service_api_keys: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["local-dev-key"]
@@ -51,16 +51,16 @@ class Settings(BaseSettings):
     telegram_api_id: int | None = None
     telegram_api_hash: str | None = None
     telegram_user_session: str | None = None
-    listener_storage_dir: str = "/tmp/teammind-listener"  # noqa: S108 - operator-configurable.
+    listener_storage_dir: str = "/tmp/rhapsody-listener"  # noqa: S108 - operator-configurable.
     live_transcription_chunk_seconds: int = 30
     s3_endpoint_url: str | None = None
     s3_access_key_id: str | None = None
     s3_secret_access_key: str | None = None
-    s3_bucket: str = "teammind"
+    s3_bucket: str = "rhapsody"
     sentry_dsn: str | None = None
     jwt_signing_key: str = "replace-with-jwt-signing-key"
-    jwt_issuer: str = "teammind"
-    jwt_audience: str = "teammind-api"
+    jwt_issuer: str = "rhapsody"
+    jwt_audience: str = "rhapsody-api"
     rate_limit_per_minute: int = 120
     log_level: str = "INFO"
     cors_origins: Annotated[list[str], NoDecode] = Field(

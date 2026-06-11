@@ -21,11 +21,11 @@ async def main() -> None:
     settings = get_settings()
     validate_listener_configuration(settings)
     diagnostics = await collect_listener_diagnostics(settings)
-    print("TeamMind listener diagnostics:")
+    print("Rhapsody listener diagnostics:")
     for line in diagnostics.lines():
         print(f"- {line}")
     print(
-        "TeamMind listener service is configured. "
+        "Rhapsody listener service is configured. "
         "Start/stop is controlled through Telegram /listen and /stop_listen commands."
     )
     while True:

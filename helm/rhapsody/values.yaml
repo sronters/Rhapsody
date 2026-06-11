@@ -1,5 +1,5 @@
 image:
-  repository: teammind/api
+  repository: rhapsody/api
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -14,9 +14,9 @@ worker:
 
 env:
   DEPLOYMENT_MODE: private
-  DATABASE_URL: postgresql+asyncpg://teammind:teammind@postgres:5432/teammind
+  DATABASE_URL: postgresql+asyncpg://rhapsody:rhapsody@postgres:5432/rhapsody
   REDIS_URL: redis://redis:6379/0
-  S3_BUCKET: teammind
+  S3_BUCKET: rhapsody
   LOCAL_LLM_BASE_URL: http://ollama:11434
 
 vault:

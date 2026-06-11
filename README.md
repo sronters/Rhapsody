@@ -1,6 +1,6 @@
-# TeamMind
+# Rhapsody
 
-TeamMind is a production-oriented FastAPI backend for a Telegram-native AI operating system for teams. It turns meetings, chats, documents, tasks, decisions, and risks into a tenant-isolated company memory with cited answers.
+Rhapsody is a production-oriented FastAPI backend for a Telegram-native AI operating system for teams. It turns meetings, chats, documents, tasks, decisions, and risks into a tenant-isolated company memory with cited answers.
 
 ## What is included
 
@@ -60,7 +60,7 @@ uvicorn app.main:create_app --factory --reload
 
 ## Deployment Modes
 
-- `cloud`: TeamMind-owned AI keys and managed infrastructure.
+- `cloud`: Rhapsody-owned AI keys and managed infrastructure.
 - `byok`: customer-supplied encrypted provider keys routed per organization.
 - `private`: on-prem stack using local vLLM/Ollama, local embeddings, MinIO, and private Postgres.
 

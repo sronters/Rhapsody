@@ -22,10 +22,10 @@ def pytest_configure(config: pytest.Config) -> None:
 
 @pytest.fixture(scope="session")
 def integration_database_url() -> str:
-    url = os.getenv("TEAMMIND_INTEGRATION_DATABASE_URL")
+    url = os.getenv("RHAPSODY_INTEGRATION_DATABASE_URL")
     if not url:
         pytest.skip(
-            "Set TEAMMIND_INTEGRATION_DATABASE_URL to run Docker Postgres + pgvector "
+            "Set RHAPSODY_INTEGRATION_DATABASE_URL to run Docker Postgres + pgvector "
             "integration tests."
         )
     if "postgresql" not in url:

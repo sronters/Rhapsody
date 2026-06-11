@@ -14,10 +14,10 @@ from app.main import create_app
 # Full end-to-end demo flow integration test.
 #
 # Requires:
-#   TEAMMIND_INTEGRATION_DATABASE_URL=postgresql+asyncpg://teammind:teammind@localhost:5432/teammind
+#   RHAPSODY_INTEGRATION_DATABASE_URL=postgresql+asyncpg://rhapsody:rhapsody@localhost:5432/rhapsody
 #
 # Run with:
-#   TEAMMIND_INTEGRATION_DATABASE_URL=postgresql+asyncpg://... \
+#   RHAPSODY_INTEGRATION_DATABASE_URL=postgresql+asyncpg://... \
 #     pytest tests/integration/ -v -m integration
 # ---------------------------------------------------------------------------
 

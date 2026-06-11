@@ -1,7 +1,7 @@
 [project]
-name = "teammind"
+name = "rhapsody"
 version = "0.1.0"
-description = "Production-grade TeamMind backend: Telegram-native AI team memory platform."
+description = "Production-grade Rhapsody backend: Telegram-native AI team memory platform."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

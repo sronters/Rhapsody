@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 set -eu
 
-: "${MINIO_ALIAS:=teammind-minio}"
-: "${S3_BUCKET:=teammind}"
+: "${MINIO_ALIAS:=rhapsody-minio}"
+: "${S3_BUCKET:=rhapsody}"
 : "${BACKUP_DIR:=./backups/minio}"
 
 mkdir -p "$BACKUP_DIR"

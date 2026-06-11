@@ -1,4 +1,4 @@
-# TeamMind local demo
+# Rhapsody local demo
 
 This demo can run through FastAPI or through the Telegram bot. The Telegram product flow uses
 the selected LLM provider from `AI_MODE`; it does not silently fall back to deterministic extraction.
@@ -74,7 +74,7 @@ The stack starts:
 - Celery worker process
 
 The API container runs `alembic upgrade head` before starting Uvicorn. The MinIO init
-container creates the `teammind` bucket idempotently.
+container creates the `rhapsody` bucket idempotently.
 
 ## Telegram demo flow
 
@@ -131,11 +131,11 @@ alembic upgrade head
 After Postgres is available on `localhost:5432`:
 
 ```bash
-$env:TEAMMIND_INTEGRATION_DATABASE_URL="postgresql+asyncpg://teammind:teammind@localhost:5432/teammind"
+$env:RHAPSODY_INTEGRATION_DATABASE_URL="postgresql+asyncpg://rhapsody:rhapsody@localhost:5432/rhapsody"
 python -m pytest tests/integration -m integration -v
 ```
 
-Integration tests are skipped when `TEAMMIND_INTEGRATION_DATABASE_URL` is not set.
+Integration tests are skipped when `RHAPSODY_INTEGRATION_DATABASE_URL` is not set.
 
 ## 5. Open API docs
 

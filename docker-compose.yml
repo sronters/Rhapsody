@@ -74,13 +74,13 @@ services:
   postgres:
     image: pgvector/pgvector:pg16
     environment:
-      POSTGRES_DB: teammind
-      POSTGRES_USER: teammind
-      POSTGRES_PASSWORD: teammind
+      POSTGRES_DB: rhapsody
+      POSTGRES_USER: rhapsody
+      POSTGRES_PASSWORD: rhapsody
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U teammind -d teammind"]
+      test: ["CMD-SHELL", "pg_isready -U rhapsody -d rhapsody"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -117,7 +117,7 @@ services:
     entrypoint: >
       sh -c "
         mc alias set local http://minio:9000 minioadmin minioadmin &&
-        mc mb --ignore-existing local/teammind &&
+        mc mb --ignore-existing local/rhapsody &&
         echo 'MinIO bucket ready.'
       "
     restart: on-failure

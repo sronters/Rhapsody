@@ -5,4 +5,4 @@ set -eu
 : "${BACKUP_DIR:=./backups/postgres}"
 
 mkdir -p "$BACKUP_DIR"
-pg_dump "$DATABASE_URL" | gzip > "$BACKUP_DIR/teammind-$(date -u +%Y%m%dT%H%M%SZ).sql.gz"
+pg_dump "$DATABASE_URL" | gzip > "$BACKUP_DIR/rhapsody-$(date -u +%Y%m%dT%H%M%SZ).sql.gz"

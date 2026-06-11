@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
-if (-not $env:TEAMMIND_INTEGRATION_DATABASE_URL) {
-  $env:TEAMMIND_INTEGRATION_DATABASE_URL = "postgresql+asyncpg://teammind:teammind@localhost:5432/teammind"
+if (-not $env:RHAPSODY_INTEGRATION_DATABASE_URL) {
+  $env:RHAPSODY_INTEGRATION_DATABASE_URL = "postgresql+asyncpg://rhapsody:rhapsody@localhost:5432/rhapsody"
 }
 
 docker compose up -d postgres

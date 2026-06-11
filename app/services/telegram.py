@@ -93,7 +93,7 @@ def classify_message_importance(text: str) -> str:
         return "task"
     if any(marker in lowered for marker in ["blocked", "risk", "problem", "риск", "блокер"]):
         return "risk"
-    if "@teammind" in lowered:
+    if "@rhapsody" in lowered:
         return "explicit_query"
     return "normal"
 

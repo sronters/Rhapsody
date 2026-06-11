@@ -39,7 +39,7 @@ from app.services.vision import (
     VisionResponseError,
 )
 
-LOCAL_ORG_NAME = "TeamMind Telegram"
+LOCAL_ORG_NAME = "Rhapsody Telegram"
 SUPPORTED_DOCUMENT_TYPES = ".txt, .md, .csv, .docx, .xlsx, .pdf"
 EMPTY_MEMORY_MESSAGE = (
     "No meetings, documents, or chat messages are indexed yet. Add a meeting or document first."
