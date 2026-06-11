@@ -253,4 +253,4 @@ Live-call режим вынесен отдельно. Его нельзя счи
 <br />
 <div align="center">
 <img src="https://capsule-render.vercel.app/api?type=waving&height=120&section=footer&color=0:7C3AED,50:2563EB,100:0F172A" />
-</div>
+   </div>
