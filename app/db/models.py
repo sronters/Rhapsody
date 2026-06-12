@@ -7,6 +7,7 @@ from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     JSON,
     BigInteger,
+    Boolean,
     DateTime,
     ForeignKey,
     Integer,
@@ -27,6 +28,15 @@ class TimestampMixin:
     )
 
 
+class UpdateTimestampMixin:
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
 class Organization(Base, TimestampMixin):
     __tablename__ = "organizations"
 
@@ -37,7 +47,7 @@ class Organization(Base, TimestampMixin):
     workspaces: Mapped[list[Workspace]] = relationship(back_populates="organization")
 
 
-class Workspace(Base, TimestampMixin):
+class Workspace(Base, TimestampMixin, UpdateTimestampMixin):
     __tablename__ = "workspaces"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -45,6 +55,9 @@ class Workspace(Base, TimestampMixin):
         ForeignKey("organizations.id"), nullable=False
     )
     name: Mapped[str] = mapped_column(String(160), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="active")
     organization: Mapped[Organization] = relationship(back_populates="workspaces")
 
 
@@ -57,7 +70,7 @@ class User(Base, TimestampMixin):
     email: Mapped[str | None] = mapped_column(String(320))
 
 
-class WorkspaceMember(Base):
+class WorkspaceMember(Base, TimestampMixin):
     __tablename__ = "workspace_members"
     __table_args__ = (UniqueConstraint("workspace_id", "user_id", name="uq_workspace_member"),)
 
@@ -76,7 +89,10 @@ class TelegramChat(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id"), nullable=False)
     telegram_chat_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    selected_by_user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
+    chat_type: Mapped[str] = mapped_column(String(32), nullable=False, default="private")
     title: Mapped[str | None] = mapped_column(String(240))
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
 
 class Meeting(Base, TimestampMixin):
@@ -115,6 +131,9 @@ class Document(Base, TimestampMixin):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id"), nullable=False)
+    uploaded_by_user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
+    telegram_chat_id: Mapped[int | None] = mapped_column(BigInteger)
+    telegram_message_id: Mapped[int | None] = mapped_column(BigInteger)
     name: Mapped[str] = mapped_column(String(240), nullable=False)
     content_type: Mapped[str] = mapped_column(String(120), nullable=False)
     storage_key: Mapped[str] = mapped_column(String(512), nullable=False)

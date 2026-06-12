@@ -31,7 +31,7 @@ class ExtractedMeetingDecision(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     title: str = Field(min_length=1, max_length=320)
-    rationale: str = Field(min_length=1, max_length=12000)
+    rationale: str = Field(default="", max_length=12000)
     source_text: str | None = Field(default=None, max_length=1200)
 
 
@@ -176,9 +176,30 @@ class _ExternalClientContext:
 
 def parse_meeting_extraction(text: str) -> LLMMeetingExtraction:
     try:
-        return LLMMeetingExtraction.model_validate_json(extract_json_object(text))
+        payload = json.loads(extract_json_object(text))
+        return LLMMeetingExtraction.model_validate(normalize_meeting_payload(payload))
     except (ValidationError, ValueError, json.JSONDecodeError) as exc:
         raise AIResponseError("The AI response was not valid meeting JSON.") from exc
+
+
+def normalize_meeting_payload(payload: object) -> object:
+    if not isinstance(payload, dict):
+        return payload
+    normalized = dict(payload)
+    if normalized.get("follow_up") is None:
+        normalized["follow_up"] = ""
+    decisions = normalized.get("decisions")
+    if isinstance(decisions, list):
+        normalized["decisions"] = [
+            {
+                **decision,
+                "rationale": "" if decision.get("rationale") is None else decision.get("rationale"),
+            }
+            if isinstance(decision, dict)
+            else decision
+            for decision in decisions
+        ]
+    return normalized
 
 
 def extract_json_object(text: str) -> str:
