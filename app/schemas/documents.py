@@ -11,6 +11,9 @@ class DocumentIngestRequest(BaseModel):
     content_type: str = Field(min_length=3, max_length=120)
     storage_key: str = Field(min_length=2, max_length=512)
     extracted_text: str = Field(min_length=1, max_length=500_000)
+    uploaded_by_user_id: UUID | None = None
+    telegram_chat_id: int | None = None
+    telegram_message_id: int | None = None
 
 
 class DocumentIngestResponse(BaseModel):
@@ -23,6 +26,9 @@ class DocumentRead(BaseModel):
 
     id: UUID
     workspace_id: UUID
+    uploaded_by_user_id: UUID | None
+    telegram_chat_id: int | None
+    telegram_message_id: int | None
     name: str
     content_type: str
     storage_key: str

@@ -41,6 +41,23 @@ def test_invalid_meeting_json_raises_clear_error() -> None:
         parse_meeting_extraction("not json")
 
 
+def test_parse_meeting_extraction_accepts_null_optional_text_from_provider() -> None:
+    extraction = parse_meeting_extraction(
+        """
+        {
+          "summary": "Project launch was discussed.",
+          "tasks": [],
+          "decisions": [{"title": "Use Gemini", "rationale": null, "source_text": null}],
+          "risks": [],
+          "follow_up": null
+        }
+        """
+    )
+
+    assert extraction.decisions[0].rationale == ""
+    assert extraction.follow_up == ""
+
+
 @pytest.mark.asyncio
 async def test_missing_ai_mode_raises_clear_error() -> None:
     client = ProductAIClient(settings=Settings(_env_file=None, ai_mode=None))

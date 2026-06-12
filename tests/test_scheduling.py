@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from app.core.config import get_settings
 from app.db.models import Task
 from app.services.scheduling import build_task_reminder_candidate, normalize_utc
 from app.workers.tasks import (
@@ -48,8 +49,13 @@ def test_normalize_utc_handles_naive_datetime() -> None:
     assert normalize_utc(datetime(2026, 1, 1, 12)).tzinfo == timezone.utc
 
 
-def test_worker_task_contracts() -> None:
-    assert dispatch_due_reminders()["status"] == "telegram_not_configured"
+def test_worker_task_contracts(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "")
+    get_settings.cache_clear()
+    try:
+        assert dispatch_due_reminders()["status"] == "telegram_not_configured"
+    finally:
+        get_settings.cache_clear()
     assert sweep_workspace_retention("workspace", "2026-01-01T00:00:00Z") == {
         "workspace_id": "workspace",
         "older_than": "2026-01-01T00:00:00Z",

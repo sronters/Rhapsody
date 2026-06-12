@@ -18,6 +18,9 @@ class DocumentService:
         workspace = await self.workspace_repository.get(payload.workspace_id)
         document = Document(
             workspace_id=payload.workspace_id,
+            uploaded_by_user_id=payload.uploaded_by_user_id,
+            telegram_chat_id=payload.telegram_chat_id,
+            telegram_message_id=payload.telegram_message_id,
             name=payload.name,
             content_type=payload.content_type,
             storage_key=payload.storage_key,

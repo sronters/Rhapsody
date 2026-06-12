@@ -20,6 +20,13 @@ router = Router()
 
 HELP_TEXT = """Commands:
 /setup - create or connect this chat to a workspace
+/menu - show the main product menu
+/project - show the active project
+/projects - list projects connected to this chat
+/project_new - create a new project
+/project_use - switch this chat to a project
+/members - show project members
+/role - set a member role by replying to their message
 /meeting - analyze meeting notes or a transcript file
 /document - save and index document text or a supported file
 /ask - ask a question from team memory
@@ -27,6 +34,13 @@ HELP_TEXT = """Commands:
 /task_done - mark a task as done
 /task_status - update a task status
 /decisions - show persisted decisions
+/digest_today - show today's project digest
+/digest_week - show this week's project digest
+/attention - show blockers, overdue tasks, and risks
+/topics - show memory topics
+/topic - show memory for one topic
+/people - show project members
+/person - show a person profile
 /audit - show recent audit events
 /reminders - show upcoming task reminders
 /status - show task status summary
@@ -34,48 +48,192 @@ HELP_TEXT = """Commands:
 /stop_listen - stop live listening and generate a report
 /live_status - show live listener status"""
 
-SETUP_REQUIRED = "This chat is not connected yet. Run /setup first."
+SETUP_REQUIRED = "Сначала выберите проект: /projects или создайте новый: /new_project Название"
 
 
 @router.message(Command("start"))
-async def start(message: Message) -> None:
+async def start(message: Message, state: FSMContext) -> None:
+    await state.clear()
     await message.answer(
-        "Welcome to Rhapsody. I turn team communication, meetings, and documents into "
-        "searchable operating memory.\n\n"
-        f"{HELP_TEXT}\n\nRun /setup first if this chat is not connected yet."
+        "Rhapsody подключает Telegram-чат к памяти команды.\n\n"
+        "Начни с /setup. Потом отправь голосовое, документ или заметки встречи.\n\n"
+        "Основное:\n"
+        "/meeting — разобрать встречу\n"
+        "/ask — спросить по памяти\n"
+        "/tasks — задачи\n"
+        "/document — добавить документ\n"
+        "/menu — меню команд"
     )
 
 
 @router.message(Command("help"))
-async def help_command(message: Message) -> None:
+async def help_command(message: Message, state: FSMContext) -> None:
+    await state.clear()
     await message.answer(HELP_TEXT)
 
 
+@router.message(Command("menu"))
+async def menu(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await message.answer(
+        "Меню Rhapsody\n\n"
+        "Память: /ask, /topics, /topic\n"
+        "Встречи и документы: /meeting, /document\n"
+        "Работа: /tasks, /task_done, /task_status, /decisions\n"
+        "Контроль: /digest_today, /digest_week, /attention, /reminders, /status\n"
+        "Проекты и люди: /project, /projects, /project_new, /project_use, /members, /people"
+    )
+
+
 @router.message(Command("setup"))
-async def setup(message: Message) -> None:
+async def setup(message: Message, state: FSMContext) -> None:
+    await state.clear()
     async with AsyncSessionFactory() as session:
-        await TelegramProductService(session).setup(
+        context = await TelegramProductService(session).setup(
             telegram_user_id=message.from_user.id,
             display_name=message.from_user.full_name,
             telegram_chat_id=message.chat.id,
             chat_title=message.chat.title or message.chat.full_name,
+            chat_type=message.chat.type,
         )
+    if context is None:
+        await message.answer(SETUP_REQUIRED)
+        return
     await message.answer(
-        "Workspace connected.\n"
-        "You can now use /meeting, /document, /ask, /tasks, /task_done, "
-        "/task_status, /decisions, /audit, /reminders, and /status."
+        f"Чат подключён.\nАктивный проект: {context.workspace_name}\n"
+        f"Твоя роль: {context.role}\n\n"
+        "Дальше можно отправить /meeting, /document или /ask."
     )
+
+
+@router.message(Command("project", "current_project"))
+async def project(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await _send_context_result(message, "current_project")
+
+
+@router.message(Command("projects"))
+async def projects(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    async with AsyncSessionFactory() as session:
+        service = TelegramProductService(session)
+        result = await service.list_available_projects(
+            message.from_user.id,
+            message.from_user.full_name,
+            message.chat.id,
+            message.chat.type,
+        )
+    await message.answer(result)
+
+
+@router.message(Command("project_new", "new_project"))
+async def project_new(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    name = " ".join(_command_args(message.text))
+    async with AsyncSessionFactory() as session:
+        service = TelegramProductService(session)
+        try:
+            result = await service.create_project_for_telegram_user(
+                message.from_user.id,
+                message.from_user.full_name,
+                message.chat.id,
+                message.chat.type,
+                name,
+                message.chat.title or message.chat.full_name,
+            )
+        except Exception as exc:
+            await message.answer(provider_error_message(exc))
+            return
+    await message.answer(result)
+
+
+@router.message(Command("project_use", "use_project"))
+async def project_use(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    selector = " ".join(_command_args(message.text))
+    if not selector:
+        await message.answer("Напиши номер или название проекта: /project_use 2")
+        return
+    async with AsyncSessionFactory() as session:
+        service = TelegramProductService(session)
+        try:
+            result = await service.use_project_for_telegram_user(
+                message.from_user.id,
+                message.from_user.full_name,
+                message.chat.id,
+                message.chat.type,
+                selector,
+                message.chat.title or message.chat.full_name,
+            )
+        except Exception as exc:
+            await message.answer(provider_error_message(exc))
+            return
+    await message.answer(result)
+
+
+@router.message(Command("project_info"))
+async def project_info(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await _send_context_result(message, "project_info")
+
+
+@router.message(Command("invite_user"))
+async def invite_user(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await _send_context_result(message, "invite_user_placeholder")
+
+
+@router.message(Command("members"))
+async def members(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await _send_context_result(message, "list_members")
+
+
+@router.message(Command("role"))
+async def role(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    args = _command_args(message.text)
+    if not message.reply_to_message or not message.reply_to_message.from_user or not args:
+        await message.answer(
+            "Ответь на сообщение участника командой /role admin, /role member или /role viewer."
+        )
+        return
+    async with AsyncSessionFactory() as session:
+        service = TelegramProductService(session)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
+        if context is None:
+            await message.answer(SETUP_REQUIRED)
+            return
+        try:
+            result = await service.set_member_role(
+                context,
+                message.reply_to_message.from_user.id,
+                args[0],
+            )
+        except Exception as exc:
+            await message.answer(provider_error_message(exc))
+            return
+    await message.answer(result)
 
 
 @router.message(Command("meeting"))
 async def meeting(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    if not await _has_selected_project(message):
+        await message.answer(SETUP_REQUIRED)
+        return
     await state.set_state(MeetingStates.waiting_for_transcript)
     await message.answer(
-        f"Send the meeting transcript, notes, or a supported file ({SUPPORTED_DOCUMENT_TYPES})."
+        "Отправь текст встречи, голосовое, аудио, видео или файл с заметками "
+        f"({SUPPORTED_DOCUMENT_TYPES})."
     )
 
 
-@router.message(MeetingStates.waiting_for_transcript, F.text)
+@router.message(MeetingStates.waiting_for_transcript, F.text & ~F.text.startswith("/"))
 async def receive_meeting(message: Message, state: FSMContext) -> None:
     await state.clear()
     await _ingest_meeting_text(message, message.text or "")
@@ -106,10 +264,14 @@ async def receive_meeting_file(message: Message, state: FSMContext) -> None:
 async def receive_meeting_recording(message: Message, state: FSMContext) -> None:
     await state.clear()
     media, filename, content_type = _message_media(message)
-    progress = await message.answer("Transcribing recording...")
+    progress = await message.answer("Голосовое получено. Расшифровываю.")
     async with AsyncSessionFactory() as session:
         service = TelegramProductService(session)
-        context = await service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await progress.edit_text(SETUP_REQUIRED)
             return
@@ -118,6 +280,7 @@ async def receive_meeting_recording(message: Message, state: FSMContext) -> None
             if downloaded is None:
                 await progress.edit_text("I could not download this recording from Telegram.")
                 return
+            await progress.edit_text("Запись скачана. Расшифровываю и анализирую встречу.")
             result = await service.ingest_meeting_media(
                 context,
                 downloaded.read(),
@@ -131,10 +294,14 @@ async def receive_meeting_recording(message: Message, state: FSMContext) -> None
 
 
 async def _ingest_meeting_text(message: Message, transcript: str) -> None:
-    progress = await message.answer("Analyzing meeting...")
+    progress = await message.answer("Анализирую встречу.")
     async with AsyncSessionFactory() as session:
         service = TelegramProductService(session)
-        context = await service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await progress.edit_text(SETUP_REQUIRED)
             return
@@ -148,21 +315,33 @@ async def _ingest_meeting_text(message: Message, transcript: str) -> None:
 
 @router.message(Command("document"))
 async def document(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    if not await _has_selected_project(message):
+        await message.answer(SETUP_REQUIRED)
+        return
     await state.set_state(DocumentStates.waiting_for_document)
-    await message.answer(f"Send document text or upload a file ({SUPPORTED_DOCUMENT_TYPES}).")
+    await message.answer(f"Отправь текст документа или файл ({SUPPORTED_DOCUMENT_TYPES}).")
 
 
-@router.message(DocumentStates.waiting_for_document, F.text)
+@router.message(DocumentStates.waiting_for_document, F.text & ~F.text.startswith("/"))
 async def receive_document_text(message: Message, state: FSMContext) -> None:
     await state.clear()
     progress = await message.answer("Indexing document...")
     async with AsyncSessionFactory() as session:
         service = TelegramProductService(session)
-        context = await service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await progress.edit_text(SETUP_REQUIRED)
             return
-        result = await service.ingest_document_text(context, message.text or "")
+        result = await service.ingest_document_text(
+            context,
+            message.text or "",
+            telegram_message_id=message.message_id,
+        )
     await progress.edit_text(result)
 
 
@@ -172,7 +351,11 @@ async def receive_document_file(message: Message, state: FSMContext) -> None:
     progress = await message.answer("Indexing document...")
     async with AsyncSessionFactory() as session:
         service = TelegramProductService(session)
-        context = await service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await progress.edit_text(SETUP_REQUIRED)
             return
@@ -186,6 +369,7 @@ async def receive_document_file(message: Message, state: FSMContext) -> None:
                 downloaded.read(),
                 message.document.file_name or "telegram-document",
                 message.document.mime_type,
+                telegram_message_id=message.message_id,
             )
         except Exception as exc:
             await progress.edit_text(provider_error_message(exc))
@@ -199,7 +383,11 @@ async def receive_document_photo(message: Message, state: FSMContext) -> None:
     progress = await message.answer("Reading image...")
     async with AsyncSessionFactory() as session:
         service = TelegramProductService(session)
-        context = await service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await progress.edit_text(SETUP_REQUIRED)
             return
@@ -214,6 +402,7 @@ async def receive_document_photo(message: Message, state: FSMContext) -> None:
                 downloaded.read(),
                 f"telegram-photo-{message.message_id}.jpg",
                 "image/jpeg",
+                telegram_message_id=message.message_id,
             )
         except Exception as exc:
             await progress.edit_text(provider_error_message(exc))
@@ -231,15 +420,19 @@ async def receive_audio_document(message: Message, state: FSMContext) -> None:
 
 @router.message(Command("ask"))
 async def ask(message: Message, state: FSMContext) -> None:
+    await state.clear()
     question = " ".join(_command_args(message.text))
     if question:
         await _answer_question(message, question)
         return
+    if not await _has_selected_project(message):
+        await message.answer(SETUP_REQUIRED)
+        return
     await state.set_state(AskStates.waiting_for_question)
-    await message.answer("What do you want to know?")
+    await message.answer("Что нужно найти в памяти проекта?")
 
 
-@router.message(AskStates.waiting_for_question, F.text)
+@router.message(AskStates.waiting_for_question, F.text & ~F.text.startswith("/"))
 async def receive_question(message: Message, state: FSMContext) -> None:
     await state.clear()
     await _answer_question(message, message.text or "")
@@ -249,7 +442,11 @@ async def _answer_question(message: Message, question: str) -> None:
     progress = await message.answer("Searching team memory...")
     async with AsyncSessionFactory() as session:
         service = TelegramProductService(session)
-        context = await service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await progress.edit_text(SETUP_REQUIRED)
             return
@@ -262,80 +459,144 @@ async def _answer_question(message: Message, question: str) -> None:
 
 
 @router.message(Command("tasks"))
-async def tasks(message: Message) -> None:
+async def tasks(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    args = _command_args(message.text)
+    if args and args[0].isdigit():
+        await _send_context_result(message, "task_detail", int(args[0]))
+        return
     await _send_context_result(message, "list_tasks")
 
 
 @router.message(Command("task_done"))
 async def task_done(message: Message, state: FSMContext) -> None:
+    await state.clear()
     args = _command_args(message.text)
     if args and args[0].isdigit():
         await _update_task_status(message, int(args[0]), "done")
         return
     await state.set_state(TaskStates.waiting_for_done_task)
-    await message.answer("Send the task number to mark as done. Use /tasks if you need the list.")
+    await message.answer("Отправь номер задачи. Список можно посмотреть через /tasks.")
 
 
-@router.message(TaskStates.waiting_for_done_task, F.text)
+@router.message(TaskStates.waiting_for_done_task, F.text & ~F.text.startswith("/"))
 async def receive_done_task(message: Message, state: FSMContext) -> None:
     await state.clear()
     if not (message.text or "").strip().isdigit():
-        await message.answer("Please send a task number. Use /tasks to see the current list.")
+        await message.answer("Отправь номер задачи. Список можно посмотреть через /tasks.")
         return
     await _update_task_status(message, int((message.text or "").strip()), "done")
 
 
 @router.message(Command("task_status"))
 async def task_status(message: Message, state: FSMContext) -> None:
+    await state.clear()
     args = _command_args(message.text)
     if len(args) >= 2 and args[0].isdigit():
         await _update_task_status(message, int(args[0]), args[1])
         return
     await state.set_state(TaskStates.waiting_for_status_update)
     await message.answer(
-        "Send task number and status, for example: 2 in_progress.\n"
-        "Allowed statuses: open, in_progress, blocked, done, cancelled."
+        "Отправь номер задачи и статус, например: 2 in_progress.\n"
+        "Статусы: open, in_progress, blocked, done, cancelled."
     )
 
 
-@router.message(TaskStates.waiting_for_status_update, F.text)
+@router.message(TaskStates.waiting_for_status_update, F.text & ~F.text.startswith("/"))
 async def receive_task_status(message: Message, state: FSMContext) -> None:
     await state.clear()
     args = (message.text or "").strip().split()
     if len(args) < 2 or not args[0].isdigit():
-        await message.answer("Please send a task number and status, for example: 2 blocked.")
+        await message.answer("Отправь номер задачи и статус, например: 2 blocked.")
         return
     await _update_task_status(message, int(args[0]), args[1])
 
 
 @router.message(Command("decisions"))
-async def decisions(message: Message) -> None:
+async def decisions(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    args = _command_args(message.text)
+    if args and args[0].isdigit():
+        await _send_context_result(message, "decision_detail", int(args[0]))
+        return
     await _send_context_result(message, "list_decisions")
 
 
 @router.message(Command("audit"))
-async def audit(message: Message) -> None:
+async def audit(message: Message, state: FSMContext) -> None:
+    await state.clear()
     await _send_context_result(message, "list_audit")
 
 
 @router.message(Command("reminders"))
-async def reminders(message: Message) -> None:
+async def reminders(message: Message, state: FSMContext) -> None:
+    await state.clear()
     await _send_context_result(message, "list_reminders")
 
 
 @router.message(Command("status"))
-async def status(message: Message) -> None:
+async def status(message: Message, state: FSMContext) -> None:
+    await state.clear()
     await _send_context_result(message, "task_status_summary")
 
 
+@router.message(Command("digest_today"))
+async def digest_today(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await _send_context_result(message, "digest", 1)
+
+
+@router.message(Command("digest_week"))
+async def digest_week(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await _send_context_result(message, "digest", 7)
+
+
+@router.message(Command("attention"))
+async def attention(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await _send_context_result(message, "attention")
+
+
+@router.message(Command("topics"))
+async def topics(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await _send_context_result(message, "topics")
+
+
+@router.message(Command("topic"))
+async def topic(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    query = " ".join(_command_args(message.text))
+    await _send_context_result(message, "topic_detail", query)
+
+
+@router.message(Command("people"))
+async def people(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await _send_context_result(message, "people")
+
+
+@router.message(Command("person"))
+async def person(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    name = " ".join(_command_args(message.text))
+    await _send_context_result(message, "person", name)
+
+
 @router.message(Command("listen"))
-async def listen(message: Message) -> None:
+async def listen(message: Message, state: FSMContext) -> None:
+    await state.clear()
     if not is_live_listening_chat_type(message.chat.type):
         await message.answer("Live call listening can only be started in a Telegram group.")
         return
     async with AsyncSessionFactory() as session:
         product_service = TelegramProductService(session)
-        context = await product_service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await product_service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await message.answer(SETUP_REQUIRED)
             return
@@ -351,13 +612,18 @@ async def listen(message: Message) -> None:
 
 
 @router.message(Command("stop_listen"))
-async def stop_listen(message: Message) -> None:
+async def stop_listen(message: Message, state: FSMContext) -> None:
+    await state.clear()
     if not is_live_listening_chat_type(message.chat.type):
         await message.answer("Live call listening is only available in Telegram groups.")
         return
     async with AsyncSessionFactory() as session:
         product_service = TelegramProductService(session)
-        context = await product_service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await product_service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await message.answer(SETUP_REQUIRED)
             return
@@ -374,13 +640,18 @@ async def stop_listen(message: Message) -> None:
 
 
 @router.message(Command("live_status"))
-async def live_status(message: Message) -> None:
+async def live_status(message: Message, state: FSMContext) -> None:
+    await state.clear()
     if not is_live_listening_chat_type(message.chat.type):
         await message.answer("Live call listening status is only available in Telegram groups.")
         return
     async with AsyncSessionFactory() as session:
         product_service = TelegramProductService(session)
-        context = await product_service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await product_service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await message.answer(SETUP_REQUIRED)
             return
@@ -394,7 +665,11 @@ async def remember_group_message(message: Message) -> None:
         return
     async with AsyncSessionFactory() as session:
         service = TelegramProductService(session)
-        context = await service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             return
         await service.ingest_chat_message(context, message.message_id, message.text or "")
@@ -407,7 +682,11 @@ async def remember_group_document(message: Message) -> None:
     progress = await message.answer("Indexing file...")
     async with AsyncSessionFactory() as session:
         service = TelegramProductService(session)
-        context = await service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await progress.delete()
             return
@@ -421,6 +700,7 @@ async def remember_group_document(message: Message) -> None:
                 downloaded.read(),
                 message.document.file_name or "telegram-document",
                 message.document.mime_type,
+                telegram_message_id=message.message_id,
             )
         except Exception as exc:
             await progress.edit_text(provider_error_message(exc))
@@ -435,7 +715,11 @@ async def remember_group_photo(message: Message) -> None:
     progress = await message.answer("Reading image...")
     async with AsyncSessionFactory() as session:
         service = TelegramProductService(session)
-        context = await service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await progress.delete()
             return
@@ -450,6 +734,7 @@ async def remember_group_photo(message: Message) -> None:
                 downloaded.read(),
                 f"telegram-photo-{message.message_id}.jpg",
                 "image/jpeg",
+                telegram_message_id=message.message_id,
             )
         except Exception as exc:
             await progress.edit_text(provider_error_message(exc))
@@ -465,7 +750,11 @@ async def remember_group_recording(message: Message) -> None:
     progress = await message.answer("Transcribing recording...")
     async with AsyncSessionFactory() as session:
         service = TelegramProductService(session)
-        context = await service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await progress.delete()
             return
@@ -487,25 +776,51 @@ async def remember_group_recording(message: Message) -> None:
     await progress.edit_text(result)
 
 
-async def _send_context_result(message: Message, method_name: str) -> None:
+async def _has_selected_project(message: Message) -> bool:
+    async with AsyncSessionFactory() as session:
+        context = await TelegramProductService(session).context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
+    return context is not None
+
+
+async def _send_context_result(message: Message, method_name: str, *args: object) -> None:
     async with AsyncSessionFactory() as session:
         service = TelegramProductService(session)
-        context = await service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await message.answer(SETUP_REQUIRED)
             return
-        result = await getattr(service, method_name)(context)
+        try:
+            result = await getattr(service, method_name)(context, *args)
+        except Exception as exc:
+            await message.answer(provider_error_message(exc))
+            return
     await message.answer(result)
 
 
 async def _update_task_status(message: Message, task_number: int, status: str) -> None:
     async with AsyncSessionFactory() as session:
         service = TelegramProductService(session)
-        context = await service.context_for_chat(message.from_user.id, message.chat.id)
+        context = await service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
         if context is None:
             await message.answer(SETUP_REQUIRED)
             return
-        result = await service.update_task_status(context, task_number, status)
+        try:
+            result = await service.update_task_status(context, task_number, status)
+        except Exception as exc:
+            await message.answer(provider_error_message(exc))
+            return
     await message.answer(result)
 
 

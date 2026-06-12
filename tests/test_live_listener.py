@@ -193,7 +193,7 @@ async def test_listener_status_transition_and_stop_processes_meeting(session_fac
 
     assert "now listening" in started.message
     assert status.active
-    assert "Meeting Summary" in stopped.report
+    assert "Итоги встречи" in stopped.report
     assert live_session.status == "completed"
     assert live_session.transcript
     assert meetings
