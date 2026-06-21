@@ -1,0 +1,32 @@
+---
+title: "Health и readiness"
+description: "Базовые проверки состояния."
+---
+
+```bash
+curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/api/v1/ready
+```
+
+Для публичного deployment:
+
+```bash
+curl https://YOUR_DOMAIN/api/v1/health
+curl https://YOUR_DOMAIN/api/v1/ready
+```
+
+Calls readiness защищён service key:
+
+```bash
+curl -H "X-API-Key: RHAPSODY_DEMO_SERVICE_KEY_DO_NOT_USE" \
+  https://YOUR_DOMAIN/api/v1/calls/ready
+```
+
+## Логи
+
+```bash
+docker compose logs -f api
+docker compose logs -f bot
+docker compose logs -f listener
+docker compose logs -f worker
+```

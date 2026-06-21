@@ -1,0 +1,17 @@
+---
+title: "Команды live-звонков"
+description: "/connect_calls, /listen, /live_status и /stop_listen."
+---
+
+| Команда | Где работает | Назначение | Возможные ошибки |
+| --- | --- | --- | --- |
+| `/connect_calls` | group | Начать подключение записи звонков | Нет проекта, нет recorder |
+| `/call_setup` | group | Показать шаги добавления Recorder | Группа не привязана |
+| `/recorder_status` | group | Проверить pool recorder accounts | Нет доступных accounts |
+| `/listen` | group | Начать запись текущего звонка | Нет активного звонка, listener disabled |
+| `/live_status` | group | Показать статус call session | Session не найдена |
+| `/stop_listen` | group | Остановить запись и финализировать | Нет активной записи |
+
+## Состояния
+
+В `call_sessions.status` используются состояния вроде `REQUESTED`, `RECORDING`, `RECONNECTING`, завершённые и failure-состояния. Ошибки audio могут попадать в `failure_code`, например `CONNECTED_NO_AUDIO` или `NO_AUDIO_FRAMES`.

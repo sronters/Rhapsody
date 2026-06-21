@@ -1,61 +1,83 @@
-# Rhapsody
+<div align="center">
+<img src="https://readme-typing-svg.demolab.com?font=Space+Mono&size=42&duration=2600&pause=900&color=0F766E&center=true&vCenter=true&width=900&lines=Rhapsody;Telegram-native+team+memory;Chats+%E2%86%92+Meetings+%E2%86%92+Tasks;Ask+your+team+history" />
 
-Rhapsody — это production-ready FastAPI бэкэнд для Telegram-native AI операционной системы команд. Превращает совещания, чаты, документы, задачи, решения и риски в изолированную корпоративную память компании с цитируемыми ответами.
+**Telegram-first память команды для встреч, документов, задач, решений и live-звонков.**
 
-## Содержимое
+[English](README.md) · [Русский](README.ru.md)
+</div>
 
-- Модульное FastAPI приложение с асинхронной SQLAlchemy 2.0
-- PostgreSQL схема с поддержкой pgvector для векторного хранилища памяти
-- Redis/Celery контракты воркеров для тяжёлой обработки
-- Маршрутизатор AI провайдеров для Cloud, BYOK и Private режимов развёртывания
-- Изоляция тенантов, аутентификация по API-ключам, RBAC помощники, логи аудита и санитизированное логирование AI запросов
-- Доменные модели для совещаний, задач, решений, документов и памяти
-- Docker Compose стек с API, воркером, Postgres + pgvector, Redis и MinIO
-- Migrации Alembic и unit тесты для базового поведения интеллектуальной системы
+Rhapsody — это project-scoped слой памяти для команд, которые работают в Telegram. Он превращает заметки встреч, файлы, голосовые сообщения и контекст групповых чатов в searchable memory с задачами, решениями, рисками, summary, источниками и audit history.
 
-Полный справочник проекта смотрите в [docs/PROJECT.md](docs/PROJECT.md): архитектура, технологический стек, API поверхность, функции, модель данных, режимы развёртывания, модель безопасности и дорожная карта.
+## Что Уже Работает
 
-## Быстрый старт
+- Telegram bot: setup проекта, переключение проектов, ingest встреч и документов, `/ask`, `/tasks`, `/decisions`, `/audit`, команды live-listener.
+- FastAPI backend с PostgreSQL + pgvector, Redis, MinIO, worker pipelines, provider-key storage, RBAC и service API-key auth.
+- Local Docker Compose stack: API, bot, worker, listener, PostgreSQL, Redis, MinIO и local Whisper mode.
+- Двуязычная основа продукта: backend catalogs, выбор языка в Telegram, сохранение locale у пользователя/чата, language instruction для AI prompts, docs, README и admin frontend routes `/en` и `/ru`.
+
+## Локальный Запуск
 
 ```bash
 cp .env.example .env
-docker compose up --build
+docker compose up --build -d
+docker compose ps
+curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/api/v1/ready
 ```
 
-Документация API доступна по адресу `http://localhost:8000/docs`.
-
-Для работы с Telegram ботом установите `TELEGRAM_BOT_TOKEN` и один из AI провайдеров в `.env`.
-Обработка загруженных voice/audio/video совещаний требует `STT_MODE=openai` с `OPENAI_API_KEY` или `STT_MODE=local_whisper` с локально установленным Whisper.
-Распознавание изображений требует `VISION_MODE=openai` с `OPENAI_API_KEY` или `VISION_MODE=gemini` с `GEMINI_API_KEY`.
-
-Прослушивание Telegram групповых звонков — это отдельный MTProto/user-session сервис, не процесс Bot API. Включайте только с явного согласия группы и реальными учётными данными:
+Чтобы открыть публичный HTTPS endpoint без белого IP:
 
 ```bash
-LISTENER_ENABLED=true
-TELEGRAM_API_ID=...
-TELEGRAM_API_HASH=...
-TELEGRAM_USER_SESSION=...
-STT_MODE=openai
-docker compose --profile listener up --build
+tailscale funnel 8000
 ```
 
-Затем используйте команды `/listen`, `/stop_listen` и `/live_status` в настроенной Telegram группе.
-Слушатель вернёт ясную ошибку, если отсутствуют MTProto учётные данные, конфигурация STT или требуемые зависимости.
+Затем укажи:
 
-## Локальная разработка
+```env
+API_BASE_URL=https://your-machine.your-tailnet.ts.net
+RHAPSODY_DOMAIN=your-machine.your-tailnet.ts.net
+```
+
+## Языки
+
+Дефолтный язык продукта — английский:
+
+```env
+DEFAULT_LOCALE=en
+SUPPORTED_LOCALES=en,ru
+```
+
+В Telegram можно использовать `/language` или `/lang`. В личных чатах выбор хранится в `users.locale`; в группах — в `telegram_chats.locale`, и менять язык группы могут только owner/admin проекта.
+
+## Документация
 
 ```bash
-python -m venv .venv
-. .venv/Scripts/Activate.ps1
-pip install -e ".[dev]"
-pytest
-uvicorn app.main:create_app --factory --reload
+cd docs-site
+npm install
+npm run sync:en-ru
+npm run check
+npm run dev
 ```
 
-## Режимы развёртывания
+`docs-site/` — основная продуктовая и операторская документация. Короткая
+maintainer-заметка по архитектуре находится в `docs/ARCHITECTURE.md`.
 
-- `cloud`: AI ключи Rhapsody и управляемая инфраструктура
-- `byok`: зашифрованные ключи провайдеров заказчика с маршрутизацией по организациям
-- `private`: on-prem стек с локальным vLLM/Ollama, локальными эмбеддингами, MinIO и приватной Postgres
+После изменения API обновите OpenAPI файл:
 
-Эти режимы управляются конфигурацией. Основная бизнес-логика не зависит от конкретного LLM провайдера.
+```bash
+python scripts/export_openapi.py
+```
+
+## Проверки
+
+```bash
+python scripts/check_translations.py
+python -m ruff check app tests migrations scripts
+python -m pytest
+cd frontend && npm install && npm run build
+cd docs-site && npm install && npm run check
+```
+
+## Статус
+
+Rhapsody подходит для локальной разработки и Telegram-тестов. Для настоящего 24/7 production нужен постоянно включенный компьютер, Oracle A1 при доступности или VPS.

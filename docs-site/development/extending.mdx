@@ -1,0 +1,33 @@
+---
+title: "Расширение Rhapsody"
+description: "Как добавлять routes, commands, providers, tasks и migrations."
+---
+
+## Новый API route
+
+1. Добавьте route в `app/api/routes/`.
+2. Подключите его в `app/api/router.py`.
+3. Добавьте Pydantic schemas.
+4. Добавьте tests.
+5. Обновите OpenAPI.
+
+## Новая Telegram-команда
+
+1. Добавьте handler в `app/bot/handlers/commands.py`.
+2. Держите workspace isolation через service layer.
+3. Добавьте regression tests.
+
+## Новый worker task
+
+1. Добавьте task в `app/workers/tasks.py`.
+2. Проверьте idempotency и retry behavior.
+3. Добавьте observability для failures.
+
+## Новая migration
+
+```bash
+alembic revision -m "describe change"
+alembic upgrade head
+```
+
+Сохраняйте `workspace_id` для данных, которые относятся к памяти проекта.

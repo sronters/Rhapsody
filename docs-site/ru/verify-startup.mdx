@@ -1,0 +1,43 @@
+---
+title: "Проверка запуска"
+description: "Health, readiness и первые логи."
+---
+
+## Health
+
+```bash
+curl http://localhost:8000/api/v1/health
+```
+
+Ожидаемый ответ:
+
+```json
+{"status":"ok","mode":"cloud"}
+```
+
+## Ready
+
+```bash
+curl http://localhost:8000/api/v1/ready
+```
+
+Ready проверяет доступность приложения и базы через FastAPI route.
+
+## Контейнеры
+
+```bash
+docker compose ps
+```
+
+Ожидайте `Up` для `api`, `bot`, `listener`, `worker`, `postgres`, `redis`, `minio`.
+
+## Логи
+
+```bash
+docker compose logs -f api
+docker compose logs -f bot
+docker compose logs -f listener
+docker compose logs -f worker
+```
+
+Если API не стартует из-за `InvalidPasswordError`, проверьте, что `DATABASE_URL` в `.env` совпадает с `POSTGRES_USER` и `POSTGRES_PASSWORD` в `docker-compose.yml`.

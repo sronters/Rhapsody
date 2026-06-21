@@ -1,0 +1,24 @@
+---
+title: "Встречи, документы, задачи и решения"
+description: "Что создаётся после ingestion."
+---
+
+## Встречи
+
+`POST /api/v1/meetings/ingest` ставит встречу в обработку и возвращает `meeting_id` и `status`. Telegram-команда `/meeting` использует сервисный слой для похожего пользовательского сценария.
+
+## Документы
+
+`POST /api/v1/documents/ingest` сохраняет документ и создаёт chunks. Endpoint требует `actor_user_id` и permission `MANAGE_WORKSPACE`.
+
+## Задачи
+
+Tasks хранят `title`, `description`, optional `assignee_user_id`, `status`, `due_at`, `source_type`, `source_id`.
+
+## Решения
+
+Decisions хранят `title`, `rationale`, `source_type`, `source_id`.
+
+## Audit log
+
+Audit log фиксирует действия вроде `organization.created`, `workspace.created`, `workspace.member_added`. Для просмотра нужен permission `VIEW_AUDIT`.

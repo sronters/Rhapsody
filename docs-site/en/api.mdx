@@ -1,0 +1,34 @@
+---
+title: "API and authentication"
+description: "Service keys, actor_user_id, membership, and OpenAPI."
+---
+
+Base path: `/api/v1`.
+
+Most endpoints require:
+
+- `X-API-Key`;
+- `actor_user_id` for workspace-scoped actions;
+- workspace membership and RBAC permission.
+
+```bash
+curl -H "X-API-Key: RHAPSODY_DEMO_SERVICE_KEY_DO_NOT_USE" \
+  http://localhost:8000/api/v1/ready
+```
+
+Main groups:
+
+- Health: `GET /health`, `GET /ready`
+- Workspaces: `/workspaces`
+- Meetings: `/meetings/ingest`
+- Documents: `/documents/ingest`
+- Memory: `/memory/ask`
+- Tasks: `/tasks`
+- Decisions: `/decisions`
+- Calls: `/calls/ready`, `/calls/ops-status`
+
+Update OpenAPI:
+
+```bash
+python scripts/export_openapi.py
+```

@@ -1,0 +1,20 @@
+---
+title: "BYOK и provider keys"
+description: "Как хранятся ключи AI providers."
+---
+
+BYOK режим предназначен для случаев, когда организация приносит свои provider keys.
+
+HTTP endpoints:
+
+- `PUT /api/v1/provider-keys`
+- `GET /api/v1/provider-keys`
+- `DELETE /api/v1/provider-keys`
+
+Provider keys шифруются через `ENCRYPTION_KEY` и сохраняются в таблице `encrypted_api_keys`.
+
+<Warning>
+Не передавайте provider keys через публичные issue, docs examples или логи. В примерах используйте только демонстрационные значения.
+</Warning>
+
+Для управления keys требуется `X-API-Key`, `actor_user_id`, membership и permission `MANAGE_WORKSPACE`.

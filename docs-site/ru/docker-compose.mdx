@@ -1,0 +1,45 @@
+---
+title: "Установка через Docker Compose"
+description: "Какие сервисы запускаются локально."
+---
+
+`docker-compose.yml` запускает полный локальный стек:
+
+```text
+api
+bot
+listener
+worker
+postgres + pgvector
+redis
+minio
+minio-init
+```
+
+## Команды
+
+```bash
+docker compose up --build -d
+docker compose ps
+docker compose logs -f
+```
+
+Миграции выполняются при старте `api` через `alembic upgrade head`.
+
+Если нужно выполнить их вручную:
+
+```bash
+docker compose exec api alembic upgrade head
+```
+
+## Порты
+
+- API: `8000`.
+- Postgres: `5432`.
+- Redis: `6379`.
+- MinIO API: `9000`.
+- MinIO console: `9001`.
+
+<Warning>
+Не открывайте PostgreSQL, Redis и MinIO напрямую в интернет. Для локального теста допустимы host ports, но production-подобный deployment должен публиковать только HTTP/HTTPS вход.
+</Warning>

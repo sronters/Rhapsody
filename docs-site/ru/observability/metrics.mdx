@@ -1,0 +1,23 @@
+---
+title: "Metrics"
+description: "Prometheus metrics для live-call operations."
+---
+
+`app/calls/metrics.py` определяет metrics:
+
+- active calls;
+- available listeners;
+- last audio age;
+- listener heartbeat age;
+- reconnects total;
+- audio chunks total;
+- pending upload chunks;
+- failed transcription chunks;
+- oldest pending chunk age;
+- spool size bytes.
+
+`GET /api/v1/calls/ops-status` обновляет эти metrics и возвращает snapshot состояния.
+
+<Info>
+Sentry настраивается через `SENTRY_DSN`, но наличие DSN зависит от deployment.
+</Info>

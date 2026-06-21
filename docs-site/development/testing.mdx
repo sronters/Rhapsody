@@ -1,0 +1,25 @@
+---
+title: "Тесты и линтинг"
+description: "Команды проверки проекта."
+---
+
+```bash
+python -m pytest
+python -m ruff check app tests migrations
+```
+
+Для integration checks:
+
+```powershell
+scripts/run-integration-tests.ps1
+```
+
+OpenAPI:
+
+```bash
+python scripts/export_openapi.py
+```
+
+<Info>
+Актуальный результат тестов должен обновляться после реального запуска, а не хардкодиться в документации навсегда.
+</Info>

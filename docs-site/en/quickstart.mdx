@@ -1,0 +1,33 @@
+---
+title: "Quickstart"
+description: "Run Rhapsody locally with Docker Compose."
+---
+
+```bash
+cp .env.example .env
+docker compose up --build -d
+docker compose ps
+curl http://localhost:8000/api/v1/health
+```
+
+Expected response:
+
+```json
+{"status":"ok","mode":"cloud"}
+```
+
+Minimum local settings:
+
+```env
+API_BASE_URL=http://localhost:8000
+DATABASE_URL=postgresql+asyncpg://rhapsody:rhapsody@postgres:5432/rhapsody
+REDIS_URL=redis://redis:6379/0
+S3_ENDPOINT_URL=http://minio:9000
+S3_BUCKET=rhapsody
+```
+
+For public HTTPS from a laptop, run:
+
+```bash
+tailscale funnel 8000
+```

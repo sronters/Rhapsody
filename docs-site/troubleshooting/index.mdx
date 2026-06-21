@@ -1,0 +1,23 @@
+---
+title: "Troubleshooting"
+description: "Формат диагностики проблем."
+---
+
+Каждая проблема проверяется по схеме:
+
+- Симптом.
+- Возможная причина.
+- Как проверить.
+- Как исправить.
+- Какие логи посмотреть.
+
+Быстрые команды:
+
+```bash
+docker compose ps
+docker compose logs -f api
+docker compose logs -f bot
+docker compose logs -f listener
+docker compose logs -f worker
+curl http://localhost:8000/api/v1/health
+```

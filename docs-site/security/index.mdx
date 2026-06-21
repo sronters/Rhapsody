@@ -1,0 +1,28 @@
+---
+title: "Безопасность"
+description: "Workspace isolation, secrets, RBAC и consent."
+---
+
+## Нельзя делать
+
+- Не коммитить `.env`.
+- Не публиковать Telegram Bot Token.
+- Не публиковать Telegram API hash.
+- Не логировать StringSession.
+- Не отдавать provider keys через API response.
+- Не записывать звонок скрытно.
+- Не открывать PostgreSQL, Redis и MinIO напрямую в интернет.
+
+## Защитные механизмы
+
+- `X-API-Key` для service API.
+- Workspace membership.
+- RBAC permissions.
+- Provider key encryption.
+- Recorder sessions stored encrypted.
+- Group binding protections.
+- Audit logs.
+
+<Warning>
+Локальные development defaults удобны для запуска, но не подходят для shared или production-like среды без замены secrets.
+</Warning>

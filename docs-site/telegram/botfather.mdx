@@ -1,0 +1,21 @@
+---
+title: "Создание бота через BotFather"
+description: "Минимальная настройка Telegram Bot API."
+---
+
+1. Откройте `@BotFather`.
+2. Выполните `/newbot`.
+3. Задайте имя и username.
+4. Сохраните token в `.env` как `TELEGRAM_BOT_TOKEN`.
+5. Перезапустите `bot`.
+
+```bash
+docker compose up -d bot
+docker compose logs -f bot
+```
+
+Для group chat добавьте bot в группу. Если группа должна использовать project memory, выполните `/setup` и выберите или создайте проект.
+
+<Info>
+BotFather нужен только для Bot API. Live-call recording использует отдельный Recorder account через MTProto; это другая часть системы.
+</Info>

@@ -1,0 +1,43 @@
+---
+title: "Ошибки Docker"
+description: "Daemon, ports, database и migrations."
+---
+
+## Docker daemon не запущен
+
+Симптом: `failed to connect to the docker API`.
+
+Проверка:
+
+```bash
+docker info
+```
+
+Исправление: запустите Docker Desktop и повторите `docker compose up --build -d`.
+
+## База недоступна
+
+Симптом: `InvalidPasswordError` или connection refused в `api` logs.
+
+Проверка:
+
+```bash
+docker compose logs -f api
+docker compose ps postgres
+```
+
+Исправление: проверьте `DATABASE_URL`. Для локального compose пароль должен совпадать с `POSTGRES_PASSWORD` в `docker-compose.yml`.
+
+## Alembic migration failed
+
+Проверка:
+
+```bash
+docker compose exec api alembic upgrade head
+```
+
+Логи:
+
+```bash
+docker compose logs -f api
+```

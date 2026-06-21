@@ -1,0 +1,30 @@
+---
+title: "AI providers"
+description: "LLM отвечает за понимание и генерацию."
+---
+
+`AI_MODE` поддерживает значения из кода:
+
+- `gemini`
+- `openai`
+- `openrouter`
+- `ollama`
+
+Дополнительные ключи в конфигурации:
+
+- `ANTHROPIC_API_KEY`
+- `AZURE_OPENAI_API_KEY`
+- `AZURE_OPENAI_ENDPOINT`
+- `AZURE_OPENAI_DEPLOYMENT`
+- `AZURE_OPENAI_API_VERSION`
+
+<Info>
+Наличие переменной окружения не всегда означает полностью реализованный production route для provider. Проверяйте фактическое поведение в `app/services/ai.py`.
+</Info>
+
+## Разделение ответственности
+
+- LLM отвечает за понимание, summary, extraction и ответы.
+- STT отвечает только за преобразование audio в текст.
+- Отказ LLM не должен удалять transcript.
+- Отказ STT не должен удалять audio recording.

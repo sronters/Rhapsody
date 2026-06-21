@@ -1,0 +1,31 @@
+---
+title: "Требования"
+description: "Что нужно для локального запуска, Telegram и live-calls."
+---
+
+## Минимально для бота без live-звонков
+
+- Docker Desktop или Docker Engine.
+- Docker Compose.
+- PostgreSQL, Redis и MinIO через `docker-compose.yml`.
+- `TELEGRAM_BOT_TOKEN`.
+- Один LLM provider: чаще всего `AI_MODE=gemini` и `GEMINI_API_KEY`.
+
+## Для audio и voice
+
+- `STT_MODE=local_whisper` или `STT_MODE=openai`.
+- ffmpeg внутри Docker image уже устанавливается.
+- Для local Whisper нужен CPU запас; модель `small` качественнее, но тяжелее `base`.
+
+## Для live-звонков
+
+- `LISTENER_ENABLED=true`.
+- `RHAPSODY_TELEGRAM_API_ID`.
+- `RHAPSODY_TELEGRAM_API_HASH`.
+- Recorder account, сохранённый в `listener_accounts.encrypted_session`.
+- Доступный STT provider.
+- Persistent storage для `LISTENER_STORAGE_DIR`.
+
+<Warning>
+Обычному пользователю не нужно получать Telegram API ID, API hash или StringSession. Это зона оператора Rhapsody или private/on-prem deployment.
+</Warning>

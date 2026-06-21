@@ -1,0 +1,29 @@
+---
+title: "Ключевые возможности"
+description: "Что уже реализовано в коде и что требует проверки."
+---
+
+## Реализовано в коде
+
+- Telegram bot startup через `TELEGRAM_BOT_TOKEN`.
+- Проекты в личном чате: `/new_project`, `/projects`, `/use_project`.
+- Group binding и защита от случайной перепривязки группы.
+- Meeting ingestion из текста и поддержанных файлов.
+- Document ingestion из текста и файлов.
+- `/ask` по memory chunks внутри workspace.
+- `/tasks`, `/task_done`, `/task_status`, `/decisions`, `/audit`.
+- Provider key storage с шифрованием.
+- Local Whisper и OpenAI STT режимы.
+- Live-call orchestration models: `listener_accounts`, `call_sessions`, `call_audio_chunks`.
+- Readiness и ops endpoints для calls.
+
+## Требует ручной проверки
+
+- Изоляция с реальным вторым Telegram user.
+- Group hijack сценарий с реальным вторым Telegram user.
+- Полный Telegram live-call recording с Recorder account.
+- Несколько параллельных звонков.
+
+## Экспериментальная зона
+
+Live-call pipeline уже имеет state machine, listener service, persistent spool, worker tasks и metrics. Но пока функция должна маркироваться как экспериментальная, если её показывают внешнему пользователю.

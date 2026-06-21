@@ -1,0 +1,39 @@
+---
+title: "Ошибки live-calls"
+description: "Recorder, no audio, STT queue и finalizing."
+---
+
+## Recorder не подключается
+
+Проверьте:
+
+```bash
+docker compose logs -f listener
+curl -H "X-API-Key: RHAPSODY_DEMO_SERVICE_KEY_DO_NOT_USE" \
+  http://localhost:8000/api/v1/calls/ready
+```
+
+Причины: `LISTENER_ENABLED=false`, нет MTProto credentials, нет available recorder account.
+
+## CONNECTED_NO_AUDIO
+
+Симптом: session есть, Recorder подключён, но audio не приходит.
+
+Проверьте, что в группе реально идёт звонок и Recorder имеет доступ к нему.
+
+## NO_AUDIO_FRAMES
+
+Симптом: listener не получил frames.
+
+Проверьте `listener` logs, audio engine diagnostics и `LIVE_NO_AUDIO_TIMEOUT_SECONDS`.
+
+## STT очередь не движется
+
+Проверьте:
+
+```bash
+docker compose logs -f worker
+docker compose logs -f redis
+```
+
+Также проверьте `STT_MODE`, provider key и statuses в `/api/v1/calls/ops-status`.

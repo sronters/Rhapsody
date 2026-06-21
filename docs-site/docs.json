@@ -1,0 +1,270 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Rhapsody",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "colors": {
+    "primary": "#0f766e",
+    "light": "#14b8a6",
+    "dark": "#042f2e"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "languages": [
+      {
+        "language": "en",
+        "default": true,
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "en/introduction",
+              "en/what-is-rhapsody",
+              "en/features",
+              "en/core-flow",
+              "en/quickstart",
+              "en/requirements",
+              "en/docker-compose",
+              "en/verify-startup",
+              "en/first-project",
+              "en/first-memory-question"
+            ]
+          },
+          {
+            "group": "Telegram",
+            "pages": [
+              "en/telegram/connect-bot",
+              "en/telegram/botfather",
+              "en/telegram/private-chat",
+              "en/telegram/group-chat",
+              "en/telegram/commands",
+              "en/telegram/errors"
+            ]
+          },
+          {
+            "group": "Projects and memory",
+            "pages": [
+              "en/projects/workspaces",
+              "en/projects/isolation",
+              "en/memory/how-memory-is-saved",
+              "en/memory/ask",
+              "en/memory/meetings-documents-tasks"
+            ]
+          },
+          {
+            "group": "Live calls",
+            "pages": [
+              "en/live-calls/overview",
+              "en/live-calls/recorder",
+              "en/live-calls/commands",
+              "en/live-calls/pipeline",
+              "en/live-calls/readiness",
+              "en/live-calls/limits"
+            ]
+          },
+          {
+            "group": "AI and STT",
+            "pages": [
+              "en/ai/providers",
+              "en/ai/byok",
+              "en/stt/overview",
+              "en/stt/local-whisper",
+              "en/stt/openai-stt"
+            ]
+          },
+          {
+            "group": "Configuration and deployment",
+            "pages": [
+              "en/configuration/environment",
+              "en/deployment/local",
+              "en/deployment/tailscale-funnel",
+              "en/deployment/oracle-always-free"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "pages": [
+              "en/api-reference/authentication",
+              "en/api-reference/overview",
+              "en/api-reference/openapi"
+            ]
+          },
+          {
+            "group": "Administration",
+            "pages": [
+              "en/administration/operations",
+              "en/administration/recorder-accounts",
+              "en/administration/backups"
+            ]
+          },
+          {
+            "group": "Observability",
+            "pages": [
+              "en/observability/health",
+              "en/observability/metrics"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "en/troubleshooting/index",
+              "en/troubleshooting/docker",
+              "en/troubleshooting/telegram",
+              "en/troubleshooting/live-calls"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "en/development/repository",
+              "en/development/testing",
+              "en/development/extending"
+            ]
+          },
+          {
+            "group": "Security and status",
+            "pages": [
+              "en/security/index",
+              "en/project-status/index"
+            ]
+          }
+        ]
+      },
+      {
+        "language": "ru",
+        "groups": [
+          {
+            "group": "Начало работы",
+            "pages": [
+              "ru/introduction",
+              "ru/what-is-rhapsody",
+              "ru/features",
+              "ru/core-flow",
+              "ru/quickstart",
+              "ru/requirements",
+              "ru/docker-compose",
+              "ru/verify-startup",
+              "ru/first-project",
+              "ru/first-memory-question"
+            ]
+          },
+          {
+            "group": "Telegram",
+            "pages": [
+              "ru/telegram/connect-bot",
+              "ru/telegram/botfather",
+              "ru/telegram/private-chat",
+              "ru/telegram/group-chat",
+              "ru/telegram/commands",
+              "ru/telegram/errors"
+            ]
+          },
+          {
+            "group": "Проекты и память",
+            "pages": [
+              "ru/projects/workspaces",
+              "ru/projects/isolation",
+              "ru/memory/how-memory-is-saved",
+              "ru/memory/ask",
+              "ru/memory/meetings-documents-tasks"
+            ]
+          },
+          {
+            "group": "Live-звонки",
+            "pages": [
+              "ru/live-calls/overview",
+              "ru/live-calls/recorder",
+              "ru/live-calls/commands",
+              "ru/live-calls/pipeline",
+              "ru/live-calls/readiness",
+              "ru/live-calls/limits"
+            ]
+          },
+          {
+            "group": "AI и STT",
+            "pages": [
+              "ru/ai/providers",
+              "ru/ai/byok",
+              "ru/stt/overview",
+              "ru/stt/local-whisper",
+              "ru/stt/openai-stt"
+            ]
+          },
+          {
+            "group": "Конфигурация и запуск",
+            "pages": [
+              "ru/configuration/environment",
+              "ru/deployment/local",
+              "ru/deployment/tailscale-funnel",
+              "ru/deployment/oracle-always-free"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "pages": [
+              "ru/api-reference/authentication",
+              "ru/api-reference/overview",
+              "ru/api-reference/openapi"
+            ]
+          },
+          {
+            "group": "Администрирование",
+            "pages": [
+              "ru/administration/operations",
+              "ru/administration/recorder-accounts",
+              "ru/administration/backups"
+            ]
+          },
+          {
+            "group": "Наблюдаемость",
+            "pages": [
+              "ru/observability/health",
+              "ru/observability/metrics"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "ru/troubleshooting/index",
+              "ru/troubleshooting/docker",
+              "ru/troubleshooting/telegram",
+              "ru/troubleshooting/live-calls"
+            ]
+          },
+          {
+            "group": "Разработка",
+            "pages": [
+              "ru/development/repository",
+              "ru/development/testing",
+              "ru/development/extending"
+            ]
+          },
+          {
+            "group": "Безопасность и статус",
+            "pages": [
+              "ru/security/index",
+              "ru/project-status/index"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/sronters/Rhapsody",
+          "icon": "github"
+        }
+      ]
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/sronters/Rhapsody"
+    }
+  }
+}

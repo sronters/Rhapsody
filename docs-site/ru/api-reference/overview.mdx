@@ -1,0 +1,31 @@
+---
+title: "API overview"
+description: "Реальные endpoints FastAPI."
+---
+
+Base path: `/api/v1`.
+
+| Группа | Endpoints |
+| --- | --- |
+| Health | `GET /health`, `GET /ready` |
+| Workspaces | `POST /workspaces/organizations`, `POST /workspaces`, `GET /workspaces/{workspace_id}`, `POST /workspaces/users`, `POST /workspaces/{workspace_id}/members`, `GET /workspaces/{workspace_id}/members` |
+| Meetings | `POST /meetings/ingest` |
+| Documents | `POST /documents/ingest` |
+| Files | `POST /files/upload-url`, `POST /files/download-url` |
+| Memory | `POST /memory/ask` |
+| Tasks | `POST /tasks`, `GET /tasks`, `PATCH /tasks/{task_id}/status` |
+| Decisions | `POST /decisions`, `GET /decisions` |
+| Audit | `GET /audit` |
+| Provider keys | `PUT /provider-keys`, `GET /provider-keys`, `DELETE /provider-keys` |
+| Telegram ingestion | `POST /telegram/events` |
+| Calls | `GET /calls/ready`, `GET /calls/ops-status` |
+
+Подробная OpenAPI схема находится на следующей странице и генерируется командой:
+
+```bash
+python scripts/export_openapi.py
+```
+
+<Info>
+Все request/response поля должны сверяться с `docs-site/openapi.json`, потому что он экспортируется из реального FastAPI app.
+</Info>

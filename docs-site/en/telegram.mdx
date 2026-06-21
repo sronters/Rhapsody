@@ -1,0 +1,28 @@
+---
+title: "Telegram"
+description: "Bot setup, private chats, group chats, and commands."
+---
+
+Create a bot with BotFather, set `TELEGRAM_BOT_TOKEN`, and restart the bot:
+
+```bash
+docker compose up -d bot
+docker compose logs -f bot
+```
+
+Important commands:
+
+| Command | Purpose |
+| --- | --- |
+| `/setup` | Connect a private or group chat to a workspace |
+| `/new_project Alpha` | Create and select a project |
+| `/projects` | List available projects |
+| `/use_project Alpha` | Select a project |
+| `/meeting` | Ingest meeting notes or transcript |
+| `/document` | Save and index a document |
+| `/ask` | Ask from workspace memory |
+| `/tasks` | Show persisted tasks |
+| `/decisions` | Show decisions |
+| `/audit` | Show recent audit events |
+
+Group memory is protected by workspace membership. A Telegram group does not automatically grant access to project memory.

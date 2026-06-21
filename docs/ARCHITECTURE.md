@@ -1,119 +1,129 @@
-# Architecture
+# Rhapsody Architecture
 
-Rhapsody is built around a Telegram bot, a FastAPI backend, and a project-scoped
-memory store. The local stack runs with Docker Compose.
+Last reviewed: 2026-06-21
+
+This is the only long-form Markdown note kept under `docs/`. Product and
+operator documentation lives in `docs-site/`.
+
+## Purpose
+
+Rhapsody is a Telegram-first team memory system. It stores meetings, documents,
+tasks, decisions, risks, live-call notes, and important chat context inside a
+selected workspace, then answers questions from that workspace with sources.
+
+The repository is a production-oriented backend and deployment scaffold. It is
+ready for local development and Telegram testing, while full production rollout
+still depends on real recorder-account validation, operator hardening, and a
+complete admin console.
+
+## Runtime Shape
+
+```text
+Telegram users
+  |
+  v
+Telegram bot commands
+  |
+  v
+FastAPI / domain services
+  |
+  +--> workspace and RBAC checks
+  +--> meetings, documents, memory, tasks, decisions, audit
+  +--> live-call orchestration
+  +--> AI provider routing and STT
+  |
+  v
+PostgreSQL + pgvector
+
+Background jobs:
+FastAPI/bot -> Redis -> Celery workers -> storage, STT, indexing, finalization
+
+Files:
+API/workers -> S3-compatible object storage -> MinIO locally
+
+Live calls:
+Bot command -> call_sessions -> listener service -> call_audio_chunks -> workers
+```
 
 ## Main Components
 
-### Telegram Bot Layer
+- `app/api/` exposes FastAPI routes under `/api/v1`.
+- `app/bot/` contains Telegram command handlers and product service logic.
+- `app/calls/` owns durable live-call state and repositories.
+- `app/db/` contains SQLAlchemy models and session setup.
+- `app/i18n/` contains backend translation catalogs and locale helpers.
+- `app/listener/` runs the MTProto/PyTgCalls listener outside the Bot API process.
+- `app/services/` contains AI, memory, file, document, STT, and audio helpers.
+- `app/workers/` contains Celery app setup and background task contracts.
+- `migrations/` contains Alembic migrations.
+- `frontend/` contains the Next.js admin shell.
+- `docs-site/` contains the Mintlify documentation site.
 
-The bot is the main product interface. It handles commands such as `/setup`,
-`/new_project`, `/meeting`, `/document`, `/ask`, `/tasks`, `/decisions`, and
-`/audit`.
+## Implemented Product Surface
 
-The bot does not own the data model directly. It opens database sessions and
-calls service methods that create workspaces, store memory, and enforce project
-scope.
+- Telegram setup and project selection in private chats and groups.
+- Meeting and document ingestion into workspace-scoped memory.
+- `/ask`, `/tasks`, `/decisions`, `/audit`, digest, attention, topics, and people commands.
+- Language selection through `/language` and `/lang` for English and Russian.
+- Service API-key auth with `X-API-Key`.
+- PostgreSQL persistence with pgvector-ready memory chunks.
+- AI routing for local deterministic mode, Ollama/local-compatible endpoints,
+  OpenAI-compatible providers, OpenRouter, Anthropic, Gemini, Azure OpenAI, and
+  encrypted BYOK provider keys.
+- STT boundary with OpenAI STT and local Whisper support.
+- Docker Compose stack for API, bot, worker, listener, Postgres, Redis, and MinIO.
+- Oracle Always Free deployment scaffold with Caddy and dedicated Compose file.
+- Live-call session, listener-account, audio-chunk, readiness, ops-status, and
+  metrics foundations.
 
-### FastAPI Backend
+## Live Calls
 
-The API provides health/readiness endpoints and backend routes for workspaces,
-documents, memory, tasks, decisions, audit logs, files, provider keys, and
-Telegram ingestion helpers.
+Live-call recording is intentionally split from the Telegram Bot API process.
+The bot creates and controls durable call sessions. The listener service joins
+calls through configured recorder accounts, writes audio chunks to local spool
+storage, and workers upload/transcribe/finalize those chunks.
 
-In the current review scope, the Telegram bot flow is the primary interface.
+Important tables:
 
-### PostgreSQL + pgvector
+- `call_sessions`
+- `listener_accounts`
+- `call_audio_chunks`
+- `live_meeting_sessions` for compatibility with the Telegram command flow
 
-PostgreSQL stores organizations, users, workspaces, Telegram chat mappings,
-meetings, documents, tasks, decisions, risks, memory chunks, and audit logs.
+Important endpoints:
 
-`pgvector` is available for vector-backed memory retrieval. Memory chunks are
-always associated with a workspace id, and retrieval for `/ask` is filtered by
-the selected workspace.
+- `GET /api/v1/calls/ready`
+- `GET /api/v1/calls/ops-status`
 
-### Redis and Worker
+Important tasks:
 
-Redis is used by the worker process. The worker exists for heavier background
-jobs and local stack parity. The core Telegram command flow used in current
-verification runs through the bot and database services.
+- `calls.upload_pending_chunks`
+- `calls.transcribe_pending_chunks`
+- `calls.finalize_meeting`
+- `calls.recover_stale`
 
-### MinIO
+Real Telegram group-call validation with recorder accounts is still required
+before treating live recording as production-ready.
 
-MinIO provides local S3-compatible object storage. Document metadata is stored in
-Postgres, while object-storage settings are configured through `S3_*`
-environment variables.
+## Verification
 
-### AI Provider Layer
+Use these checks after touching backend or docs:
 
-The product AI client routes meeting extraction and question answering through
-the configured provider. Current modes include providers such as Gemini, OpenAI,
-OpenRouter, Anthropic, Ollama, and local-compatible endpoints depending on
-configuration.
-
-The bot should return a clean error if the configured provider fails or is
-missing required credentials.
-
-### STT Layer
-
-Speech-to-text is separate from the LLM provider. Supported modes include
-OpenAI STT and `local_whisper`.
-
-For `STT_MODE=local_whisper`, the runtime uses `faster-whisper` and ffmpeg.
-Telegram `.ogg`/`.oga` voice messages are converted before transcription. If STT
-is not configured, audio/voice/video meeting inputs return a clean error.
-
-## Project and Workspace Isolation
-
-The central isolation boundary is the workspace.
-
-- A project is represented as a workspace.
-- Telegram private chat selection is scoped by Telegram user.
-- Telegram group selection is scoped by the group chat.
-- Memory, meetings, documents, tasks, decisions, risks, and audit logs are
-  stored with `workspace_id`.
-- `/ask`, `/tasks`, `/decisions`, and `/audit` query only the active workspace.
-- A non-manager cannot rebind an already-bound group to a different project.
-
-Current group member policy: Telegram group membership alone is not enough. A
-user must also be a project member to access bound project memory.
-
-## Repository Structure
-
-```text
-app/
-  api/              FastAPI routes
-  bot/              Telegram bot handlers, states, and product service
-  db/               SQLAlchemy models and session setup
-  listener/         Separate live-call listener code
-  schemas/          Pydantic request/response models
-  services/         Domain services for AI, documents, memory, STT, files
-  worker/           Background worker entrypoint and tasks
-migrations/         Alembic migrations
-tests/              Unit and integration-style tests
-docs/               Human-readable project documentation
+```bash
+python scripts/check_translations.py
+python -m ruff check app tests migrations scripts
+$env:PYTHONPATH=(Get-Location).Path; python -m pytest
+cd frontend && npm install && npm run build
+cd docs-site && npm install && npm run check
 ```
 
-## Audit Logs
+The explicit `PYTHONPATH` protects local test runs on this workstation from
+importing a neighboring package named `app`.
 
-Audit logs record important project actions such as workspace creation,
-workspace activation, meeting ingestion, document ingestion, and task status
-updates. Audit entries include organization, workspace, actor, action, resource,
-and metadata.
+## Documentation Layout
 
-Audit listing in Telegram is scoped to the active project.
-
-## Local Docker Compose Stack
-
-The local stack includes:
-
-- `api` - FastAPI app and Alembic migration startup.
-- `bot` - Telegram Bot API process.
-- `worker` - background worker process.
-- `postgres` - PostgreSQL with pgvector.
-- `redis` - Redis for worker support.
-- `minio` - local S3-compatible storage.
-- `listener` - optional separate MTProto listener profile/service.
-
-The live listener is separate from the current accepted core Telegram flow and
-should not be enabled unless its credentials and consent requirements are clear.
+- `README.md` is the short English project entry point.
+- `README.ru.md` is the short Russian project entry point.
+- `DEMO.md` is the runnable local demo flow.
+- `docs/ARCHITECTURE.md` is this maintainer architecture note.
+- `docs-site/` is the full docs site and should not commit `node_modules/`.

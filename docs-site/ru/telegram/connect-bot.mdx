@@ -1,0 +1,31 @@
+---
+title: "Подключение Telegram-бота"
+description: "Как включить Bot API процесс Rhapsody."
+---
+
+Bot API процесс запускается сервисом `bot` и читает `TELEGRAM_BOT_TOKEN` из `.env`.
+
+<Steps>
+  <Step title="Получите token">
+    Создайте бота через BotFather и сохраните token в `.env`.
+  </Step>
+  <Step title="Перезапустите bot">
+    ```bash
+    docker compose up -d bot
+    docker compose logs -f bot
+    ```
+  </Step>
+  <Step title="Откройте Telegram">
+    Напишите боту `/start`, затем `/setup`.
+  </Step>
+</Steps>
+
+```env
+TELEGRAM_BOT_TOKEN=1234567890:DEMO_BOT_TOKEN_DO_NOT_USE
+```
+
+<Warning>
+Это демонстрационное значение. Никогда не публикуйте настоящий Telegram Bot Token.
+</Warning>
+
+Если bot не отвечает, проверьте `docker compose logs -f bot`, token и доступ контейнера к Telegram API.

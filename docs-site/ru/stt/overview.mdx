@@ -1,0 +1,17 @@
+---
+title: "STT overview"
+description: "Speech-to-text для voice, audio и live-call chunks."
+---
+
+`STT_MODE` поддерживает:
+
+- `local_whisper`
+- `openai`
+
+STT применяется к Telegram voice/audio/video и live-call audio chunks.
+
+## Ошибки
+
+Если STT не настроен, audio inputs должны возвращать понятную ошибку вместо fake transcript.
+
+Если STT падает во время live-call pipeline, audio chunk должен остаться доступным для повторной обработки.

@@ -1,0 +1,35 @@
+---
+title: "Operations"
+description: "Organizations, workspaces, members, roles и audit."
+---
+
+Администрирование Rhapsody сейчас выполняется через HTTP API, Telegram-команды и прямые operator scripts для Recorder accounts.
+
+## Основные сущности
+
+- `organizations`: deployment mode и retention mode.
+- `workspaces`: проекты команды.
+- `users`: Telegram user mapping и display profile.
+- `workspace_members`: роль пользователя в workspace.
+- `provider_keys`: encrypted BYOK keys.
+- `listener_accounts`: Recorder pool.
+- `audit_logs`: действия organization/workspace.
+
+## Роли
+
+Используйте только роли из кода:
+
+```text
+member
+team_lead
+manager
+admin
+enterprise_admin
+```
+
+## Audit
+
+```bash
+curl -H "X-API-Key: RHAPSODY_DEMO_SERVICE_KEY_DO_NOT_USE" \
+  "http://localhost:8000/api/v1/audit?workspace_id=00000000-0000-0000-0000-000000000001&actor_user_id=00000000-0000-0000-0000-000000000002"
+```

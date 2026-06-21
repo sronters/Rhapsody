@@ -1,0 +1,54 @@
+---
+title: "Быстрый старт"
+description: "Минимальный путь: .env, Docker Compose, health check."
+---
+
+## 1. Создайте `.env`
+
+```bash
+cp .env.example .env
+```
+
+Для локального Docker Compose используйте значения:
+
+```env
+API_BASE_URL=http://localhost:8000
+DATABASE_URL=postgresql+asyncpg://rhapsody:rhapsody@postgres:5432/rhapsody
+REDIS_URL=redis://redis:6379/0
+S3_ENDPOINT_URL=http://minio:9000
+S3_ACCESS_KEY_ID=minioadmin
+S3_SECRET_ACCESS_KEY=minioadmin
+S3_BUCKET=rhapsody
+```
+
+## 2. Запустите стек
+
+```bash
+docker compose up --build -d
+docker compose ps
+```
+
+## 3. Проверьте API
+
+```bash
+curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/api/v1/ready
+```
+
+Ожидаемый health response:
+
+```json
+{"status":"ok","mode":"cloud"}
+```
+
+## 4. Настройте Telegram bot
+
+Создайте бота через BotFather, положите token в `TELEGRAM_BOT_TOKEN` и перезапустите сервисы:
+
+```bash
+docker compose up -d api bot listener worker
+```
+
+<Tip>
+Если нужен публичный HTTPS без VPS, используйте Tailscale Funnel и адрес `*.ts.net`. Подробности в разделе Deployment.
+</Tip>

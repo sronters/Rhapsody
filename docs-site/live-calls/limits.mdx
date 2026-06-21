@@ -1,0 +1,21 @@
+---
+title: "Ограничения live-звонков"
+description: "Что ещё требует ручной проверки."
+---
+
+## Требует ручной проверки
+
+- Recorder account joins real Telegram group call.
+- Audio frames реально приходят в listener.
+- `/stop_listen` создаёт итог встречи после реального звонка.
+- Несколько параллельных звонков.
+- Поведение после network interruption.
+
+## Известные failure codes
+
+- `CONNECTED_NO_AUDIO`: Recorder подключён, но audio не приходит.
+- `NO_AUDIO_FRAMES`: нет audio frames для обработки.
+
+## Consent
+
+Запись звонка должна быть видимой и согласованной. Не подключайте Recorder скрытно и не делайте silent recording.

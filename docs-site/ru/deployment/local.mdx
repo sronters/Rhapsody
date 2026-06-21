@@ -1,0 +1,20 @@
+---
+title: "Локальный запуск"
+description: "Ноутбук или рабочая станция через Docker."
+---
+
+```bash
+cp .env.example .env
+docker compose up --build -d
+docker compose ps
+curl http://localhost:8000/api/v1/health
+```
+
+Подходит для:
+
+- разработки;
+- Telegram bot тестов;
+- проверки ingestion встреч и документов;
+- первого live-call эксперимента.
+
+Не подходит как стабильный 24/7 hosting, если ноутбук выключается или теряет сеть.

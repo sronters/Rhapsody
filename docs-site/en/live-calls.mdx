@@ -1,0 +1,32 @@
+---
+title: "Live calls"
+description: "Recorder account, MTProto listener, audio chunks, and STT."
+---
+
+Telegram Bot API cannot join a group call directly. Rhapsody uses a separate Recorder account controlled by the listener service through MTProto.
+
+```mermaid
+flowchart LR
+  A["Telegram group"] --> B["Bot API"]
+  B --> C["Call session"]
+  C --> D["MTProto listener"]
+  D --> E["Audio spool"]
+  E --> F["Object storage"]
+  F --> G["STT worker"]
+  G --> H["Meeting finalizer"]
+  H --> I["Workspace memory"]
+```
+
+User flow:
+
+```text
+Add Rhapsody Bot
+→ connect the assigned Recorder
+→ start a call
+→ run /listen
+→ receive the result
+```
+
+<Warning>
+Do not ask ordinary users for Telegram API ID, API hash, or StringSession. These belong to the operator/private deployment flow.
+</Warning>

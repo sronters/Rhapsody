@@ -1,0 +1,43 @@
+---
+title: "Состояние проекта"
+description: "Что реализовано, проверено и ожидает manual validation."
+---
+
+## Реализовано в коде
+
+- FastAPI backend с modular routes.
+- SQLAlchemy models и Alembic migrations.
+- Telegram bot command handlers.
+- Workspace isolation foundation.
+- Meeting/document/memory/task/decision/audit domain services.
+- Provider key encryption.
+- Local Whisper/OpenAI STT configuration.
+- Live-call orchestration models, listener service, worker tasks, readiness endpoints.
+- Docker Compose stack.
+
+## Проверено автоматическими тестами
+
+- API route contracts.
+- Security JWT helpers.
+- RBAC.
+- Project isolation.
+- Telegram group hijack regression.
+- Live listener service behavior.
+- Call sessions.
+- Worker pipeline contracts.
+
+## Pending manual validation
+
+- Второй реальный Telegram user cross-access.
+- Второй реальный Telegram user group hijack check.
+- Полный реальный Telegram group-call recording с Recorder account.
+- Несколько параллельных live-calls.
+
+## Roadmap
+
+- Raw Telegram webhook normalization.
+- Full frontend admin workflows.
+- Production auth/SSO/session lifecycle.
+- Distributed rate limiting.
+- Deeper vector retrieval.
+- Production restore drills.

@@ -1,0 +1,20 @@
+---
+title: "Local Whisper"
+description: "Локальное распознавание через faster-whisper."
+---
+
+Переменные:
+
+```env
+STT_MODE=local_whisper
+LOCAL_WHISPER_MODEL=small
+LOCAL_WHISPER_DEVICE=cpu
+LOCAL_WHISPER_COMPUTE_TYPE=int8
+LOCAL_WHISPER_LANGUAGE=ru
+```
+
+Для слабого CPU начните с `base` или `small` и `int8`.
+
+<Tip>
+На бесплатной VM или ноутбуке сначала оптимизируйте durable capture. True live transcription может отставать на CPU.
+</Tip>

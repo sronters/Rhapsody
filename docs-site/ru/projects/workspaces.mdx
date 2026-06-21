@@ -1,0 +1,26 @@
+---
+title: "Workspace"
+description: "Как Rhapsody представляет проект в базе."
+---
+
+Workspace — это техническая модель проекта. Основные таблицы, связанные с workspace:
+
+- `workspaces`
+- `workspace_members`
+- `telegram_chats`
+- `meetings`
+- `documents`
+- `memory_chunks`
+- `tasks`
+- `decisions`
+- `audit_logs`
+- `call_sessions`
+- `call_audio_chunks`
+
+## Membership
+
+Роль участника хранится в `workspace_members.role`. Реальные permissions определяются в `app/core/rbac.py`.
+
+## Active project
+
+Для Telegram active project выбирается через команды `/new_project`, `/projects`, `/use_project`. В private chat выбор связан с пользователем, в group chat — с привязкой группы.

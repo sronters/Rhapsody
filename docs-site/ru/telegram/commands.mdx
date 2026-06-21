@@ -1,0 +1,31 @@
+---
+title: "Команды Telegram"
+description: "Назначение, контекст и ожидаемый результат."
+---
+
+| Команда | Где работает | Назначение | Ожидаемый результат |
+| --- | --- | --- | --- |
+| `/start` | private | Показать короткую справку | Пользователь видит первый путь через `/setup` |
+| `/setup` | private/group | Создать или подключить чат к workspace | Чат готов к проектам и памяти |
+| `/new_project Alpha` | private | Создать и выбрать проект | Создан workspace `Alpha` |
+| `/projects` | private/group | Показать доступные проекты | Список проектов и подсказка выбора |
+| `/use_project Alpha` | private/group | Выбрать активный проект | Команды читают выбранный workspace |
+| `/project` | private/group | Показать текущий проект | Имя и контекст активного workspace |
+| `/meeting` | private/group | Сохранить встречу | Summary, tasks, decisions, risks, memory chunks |
+| `/document` | private/group | Сохранить документ | Документ индексируется в память |
+| `/ask` | private/group | Ответить из памяти | Ответ с источниками из workspace |
+| `/tasks` | private/group | Показать задачи | Список persisted tasks |
+| `/task_done` | private/group | Закрыть задачу по номеру | Статус задачи обновлён |
+| `/task_status` | private/group | Изменить статус задачи | Статус обновлён на переданное значение |
+| `/decisions` | private/group | Показать решения | Список persisted decisions |
+| `/audit` | private/group | Показать audit events | Последние события workspace |
+| `/connect_calls` | group | Подготовить запись звонка | Инструкция по Recorder account |
+| `/call_setup` | group | Показать setup для звонков | Как добавить Recorder и начать запись |
+| `/recorder_status` | group | Проверить Recorder pool | Доступность recorder accounts |
+| `/listen` | group | Начать live listening | Создана call session |
+| `/live_status` | group | Проверить статус live session | Текущее состояние записи |
+| `/stop_listen` | group | Остановить запись и финализировать | Итог встречи после обработки |
+
+<Info>
+Команды `/topics`, `/topic`, `/people`, `/person`, `/reminders`, `/status`, `/digest_today`, `/digest_week`, `/attention` присутствуют в обработчиках как продуктовые эксперименты. Основной документированный поток: projects, meetings, documents, ask, tasks, decisions, audit и live-calls.
+</Info>

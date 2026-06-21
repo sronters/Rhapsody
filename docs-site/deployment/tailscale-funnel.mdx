@@ -1,0 +1,33 @@
+---
+title: "Tailscale Funnel"
+description: "Публичный HTTPS для локального API без белого IP."
+---
+
+Если Oracle A1 недоступен, можно открыть локальный API через Tailscale Funnel:
+
+```bash
+tailscale funnel 8000
+```
+
+Tailscale покажет адрес вида:
+
+```text
+https://whoamii.tailbcb43e.ts.net
+```
+
+В `.env`:
+
+```env
+API_BASE_URL=https://whoamii.tailbcb43e.ts.net
+RHAPSODY_DOMAIN=whoamii.tailbcb43e.ts.net
+```
+
+Проверка:
+
+```bash
+curl https://whoamii.tailbcb43e.ts.net/api/v1/health
+```
+
+<Info>
+Funnel работает на домене `*.ts.net`. Ваш внешний DNS вроде `rhapsody-ablaihan.dns.army` для этого режима не нужен.
+</Info>

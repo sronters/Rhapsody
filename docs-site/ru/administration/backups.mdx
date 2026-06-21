@@ -1,0 +1,26 @@
+---
+title: "Backups"
+description: "Postgres и MinIO backup scripts."
+---
+
+В репозитории есть scripts для Postgres и MinIO:
+
+```bash
+./scripts/backup-postgres.sh
+./scripts/backup-minio.sh
+./scripts/backup-oracle.sh
+```
+
+Restore scripts:
+
+```bash
+./scripts/restore-postgres.sh
+./scripts/restore-minio.sh
+```
+
+Для Oracle VM runbook использует `scripts/backup-oracle.sh`, который сохраняет:
+
+- Postgres dump;
+- MinIO bucket data.
+
+Для production-подобной эксплуатации копируйте backups за пределы VM или ноутбука.

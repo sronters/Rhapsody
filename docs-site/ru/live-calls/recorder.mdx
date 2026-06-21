@@ -1,0 +1,30 @@
+---
+title: "Telegram Recorder"
+description: "Как подключается Recorder account."
+---
+
+В cloud-сценарии пользователь не создаёт Telegram API app и не передаёт StringSession. Rhapsody должен иметь заранее подготовленные Recorder accounts.
+
+Пользовательский путь:
+
+```text
+Добавить Rhapsody Bot
+→ подключить назначенный Recorder
+→ запустить звонок
+→ выполнить /listen
+→ получить итог
+```
+
+## Операторский путь
+
+Оператор Rhapsody создаёт session:
+
+```bash
+docker compose run --rm api python scripts/create_telegram_session.py
+```
+
+Session должна храниться в `listener_accounts.encrypted_session`, а не в публичной документации, логах или `.env`.
+
+<Warning>
+Не логируйте StringSession и не публикуйте `RHAPSODY_TELEGRAM_API_HASH`.
+</Warning>

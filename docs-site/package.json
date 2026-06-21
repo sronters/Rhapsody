@@ -1,0 +1,12 @@
+{
+  "name": "rhapsody-docs-site",
+  "private": true,
+  "scripts": {
+    "dev": "mintlify dev --port 3333",
+    "check": "mintlify broken-links",
+    "sync:en-ru": "node ../scripts/sync_docs_en_ru.mjs"
+  },
+  "devDependencies": {
+    "mintlify": "^4.2.102"
+  }
+}

@@ -1,0 +1,27 @@
+---
+title: "Oracle Always Free"
+description: "Опциональный zero-cost VM путь, когда A1 capacity доступна."
+---
+
+Репозиторий содержит `docker-compose.oracle.yml`, `Caddyfile`, `.env.oracle.example`
+и deployment scripts under `scripts/`.
+
+Рекомендуемая форма:
+
+```text
+VM.Standard.A1.Flex
+ARM64
+2 OCPU
+12 GB RAM
+Ubuntu 24.04 ARM64
+100-150 GB boot volume
+```
+
+Запуск:
+
+```bash
+cp .env.oracle.example .env
+./scripts/deploy-oracle.sh
+```
+
+Если A1 unavailable в регионе, не выбирайте платный shape только ради бесплатного прототипа. Используйте локальный Docker + Tailscale Funnel или позднее дешёвый VPS.

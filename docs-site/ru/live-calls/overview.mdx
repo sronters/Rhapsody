@@ -1,0 +1,34 @@
+---
+title: "Обзор live-call системы"
+description: "Bot API, Recorder account, MTProto listener и worker pipeline."
+---
+
+Telegram Bot API не подключается к групповому звонку напрямую. Поэтому Rhapsody использует отдельный Recorder account: обычный Telegram user session, которым управляет listener service через MTProto.
+
+```mermaid
+flowchart LR
+  A["Telegram group"] --> B["Telegram Bot API"]
+  B --> C["Call session"]
+  C --> D["MTProto listener"]
+  D --> E["Persistent audio spool"]
+  E --> F["Object storage"]
+  F --> G["STT worker"]
+  G --> H["Meeting finalizer"]
+  H --> I["Summary, tasks, decisions, risks"]
+  I --> J["Workspace memory"]
+```
+
+## Термины
+
+- Bot API: обычный Telegram bot, принимает команды `/listen`, `/stop_listen`, `/live_status`.
+- MTProto: Telegram protocol для user session.
+- Recorder account: Telegram user account, добавляемый в группу для записи звонка.
+- Listener service: контейнер `listener`, который управляет подключением Recorder.
+- Call session: запись состояния звонка в `call_sessions`.
+- Audio chunk: фрагмент audio в `call_audio_chunks`.
+- STT: speech-to-text обработка chunk.
+- AI finalization: summary, tasks, decisions, risks и memory chunks.
+
+<Warning>
+Полный реальный Telegram group-call сценарий ещё не подтверждён ручным тестом в этом репозитории. Документируйте его как экспериментальную возможность.
+</Warning>

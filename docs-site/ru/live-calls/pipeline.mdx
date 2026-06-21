@@ -1,0 +1,35 @@
+---
+title: "Live-call pipeline"
+description: "Audio chunks, spool, upload, STT и finalization."
+---
+
+```mermaid
+flowchart TD
+  A["/listen"] --> B["Reserve listener account"]
+  B --> C["Create call_session"]
+  C --> D["Listener joins group call"]
+  D --> E["Write audio chunks to LISTENER_STORAGE_DIR"]
+  E --> F["Upload chunk to S3/MinIO"]
+  F --> G["Transcribe chunk"]
+  G --> H["Finalize meeting"]
+  H --> I["Persist transcript and memory"]
+```
+
+## Persistent spool
+
+`LISTENER_STORAGE_DIR` по умолчанию `/var/lib/rhapsody/listener`. В Docker Compose он монтируется в volume `listener_spool`, чтобы audio chunks не исчезали при коротком restart.
+
+## Повторные попытки
+
+`call_audio_chunks` содержит `attempt_count`, `failure_code`, `failure_message` и `status`. Это позволяет повторять upload/transcribe шаги.
+
+## Failure isolation
+
+```mermaid
+flowchart LR
+  A["Audio captured"] --> B{"Upload failed?"}
+  B -- "yes" --> C["Chunk remains SPOOLED"]
+  B -- "no" --> D{"STT failed?"}
+  D -- "yes" --> E["TRANSCRIBE_FAILED, audio remains"]
+  D -- "no" --> F["Transcript saved"]
+```

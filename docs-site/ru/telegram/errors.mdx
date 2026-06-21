@@ -1,0 +1,44 @@
+---
+title: "Ошибки Telegram-команд"
+description: "Симптомы и что проверить."
+---
+
+## Проект не выбран
+
+Симптом: bot просит выбрать проект.
+
+Проверка:
+
+```text
+/projects
+```
+
+Исправление:
+
+```text
+/new_project Alpha
+```
+
+или:
+
+```text
+/use_project Alpha
+```
+
+## Bot не отвечает
+
+Проверьте:
+
+```bash
+docker compose logs -f bot
+```
+
+Возможные причины: пустой `TELEGRAM_BOT_TOKEN`, неправильный token, нет сети из контейнера, bot был удалён из группы.
+
+## Команда запрещена в группе
+
+Проверьте, что группа привязана через `/setup`, а пользователь является member workspace.
+
+## Audio не распознаётся
+
+Проверьте `STT_MODE`, `OPENAI_API_KEY` для OpenAI STT или настройки local Whisper.

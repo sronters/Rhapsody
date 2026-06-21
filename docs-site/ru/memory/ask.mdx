@@ -1,0 +1,25 @@
+---
+title: "Как работает /ask"
+description: "Вопросы к project-scoped memory."
+---
+
+Команда `/ask` и HTTP endpoint `POST /api/v1/memory/ask` отвечают из памяти конкретного workspace.
+
+```text
+/ask Какие задачи появились после встречи?
+```
+
+HTTP endpoint требует:
+
+- `X-API-Key`;
+- `actor_user_id` query parameter;
+- `workspace_id` в body;
+- permission `READ_MEMORY`.
+
+## Источники в ответах
+
+Ответ включает source references из memory chunks. Это нужно, чтобы пользователь видел, откуда взят вывод.
+
+<Warning>
+Если memory chunks пустые, Rhapsody не должен притворяться, что знает ответ. Проверьте ingestion встречи или документа.
+</Warning>

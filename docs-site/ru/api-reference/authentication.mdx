@@ -1,0 +1,40 @@
+---
+title: "Authentication"
+description: "X-API-Key, actor_user_id, workspace membership и JWT foundation."
+---
+
+## X-API-Key
+
+Большинство HTTP API routes используют dependency `ServiceAuth`, который проверяет header:
+
+```bash
+curl -H "X-API-Key: RHAPSODY_DEMO_SERVICE_KEY_DO_NOT_USE" \
+  http://localhost:8000/api/v1/ready
+```
+
+Значения берутся из `SERVICE_API_KEYS`.
+
+## actor_user_id
+
+Workspace-scoped endpoints дополнительно принимают `actor_user_id` query parameter и проверяют membership/permission через `AccessService`.
+
+Пример:
+
+```bash
+curl -H "X-API-Key: RHAPSODY_DEMO_SERVICE_KEY_DO_NOT_USE" \
+  "http://localhost:8000/api/v1/tasks?workspace_id=00000000-0000-0000-0000-000000000001&actor_user_id=00000000-0000-0000-0000-000000000002"
+```
+
+## Роли
+
+| Role | Permissions |
+| --- | --- |
+| `member` | `read_memory` |
+| `team_lead` | `read_memory`, `manage_tasks`, `manage_decisions` |
+| `manager` | `read_memory`, `manage_tasks`, `manage_decisions`, `view_audit` |
+| `admin` | `read_memory`, `manage_tasks`, `manage_decisions`, `manage_workspace`, `view_audit` |
+| `enterprise_admin` | все permissions |
+
+## JWT foundation
+
+`app/core/security.py` содержит `create_jwt`, `verify_jwt` и `require_user_jwt`, но текущие route dependencies в API используют service key + explicit `actor_user_id`. JWT — foundation для будущего пользовательского auth, а не основной публичный auth flow текущих endpoints.

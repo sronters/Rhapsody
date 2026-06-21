@@ -1,0 +1,37 @@
+---
+title: "Ошибки Telegram"
+description: "Bot startup, project selection и команды."
+---
+
+## Bot не запускается
+
+Проверьте:
+
+```bash
+docker compose logs -f bot
+```
+
+Возможные причины: пустой `TELEGRAM_BOT_TOKEN`, неправильный token, Telegram API недоступен.
+
+## Bot не отвечает
+
+Проверьте, что контейнер `bot` `Up`, bot не заблокирован пользователем и добавлен в группу.
+
+## Проект не выбран
+
+Исправление:
+
+```text
+/projects
+/use_project Alpha
+```
+
+или:
+
+```text
+/new_project Alpha
+```
+
+## Gemini не отвечает
+
+Проверьте `AI_MODE=gemini`, `GEMINI_API_KEY` и logs `api`/`bot`.

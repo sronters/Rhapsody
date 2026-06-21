@@ -1,0 +1,20 @@
+---
+title: "Структура репозитория"
+description: "Где находится основная логика."
+---
+
+```text
+app/api/routes/      HTTP routes
+app/bot/             Telegram bot handlers and services
+app/calls/           Live-call state, repository, metrics
+app/listener/        MTProto listener service
+app/services/        Domain services
+app/workers/         Celery worker tasks
+app/db/models.py     SQLAlchemy models
+migrations/          Alembic migrations
+tests/               Unit and integration tests
+docs/                Existing project notes and runbooks
+docs-site/           Public documentation site
+```
+
+Перед изменением API route обновите tests и OpenAPI schema.

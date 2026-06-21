@@ -1,0 +1,35 @@
+---
+title: "Readiness live-call системы"
+description: "Calls ready, ops status и Prometheus metrics."
+---
+
+## Calls readiness
+
+```bash
+curl -H "X-API-Key: RHAPSODY_DEMO_SERVICE_KEY_DO_NOT_USE" \
+  http://localhost:8000/api/v1/calls/ready
+```
+
+Если `LISTENER_ENABLED=false`, endpoint возвращает status `disabled`.
+
+Проверки включают:
+
+- listener config;
+- MTProto diagnostics;
+- audio engine;
+- spool writeability;
+- ffmpeg;
+- Postgres;
+- Redis;
+- MinIO;
+- STT;
+- available recorders.
+
+## Ops status
+
+```bash
+curl -H "X-API-Key: RHAPSODY_DEMO_SERVICE_KEY_DO_NOT_USE" \
+  http://localhost:8000/api/v1/calls/ops-status
+```
+
+Ответ показывает active calls, stale audio calls, audio chunk statuses, listener account statuses, pending upload chunks и spool size.

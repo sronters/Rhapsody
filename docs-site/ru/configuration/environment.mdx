@@ -1,0 +1,56 @@
+---
+title: "Переменные окружения"
+description: "Полная карта .env из app/core/config.py и .env.example."
+---
+
+| Переменная | Обязательна | По умолчанию | Где получить | Описание |
+| --- | ---: | --- | --- | --- |
+| `APP_NAME` | нет | `Rhapsody` | проект | Имя приложения |
+| `ENVIRONMENT` | нет | `development` | оператор | `development`, `test`, `staging`, `production` |
+| `DEPLOYMENT_MODE` | нет | `cloud` | оператор | `cloud`, `byok`, `private` |
+| `API_BASE_URL` | да | `http://localhost:8000` | deployment | Базовый публичный URL API |
+| `DATABASE_URL` | да | localhost URL | Docker/Postgres | SQLAlchemy asyncpg URL |
+| `REDIS_URL` | да | `redis://localhost:6379/0` | Docker/Redis | Celery broker/result backend |
+| `SERVICE_API_KEYS` | да | `local-dev-key` | оператор | CSV или JSON list service keys |
+| `ENCRYPTION_KEY` | да | placeholder | operator secret store | Fernet key для provider keys/sessions |
+| `JWT_SIGNING_KEY` | да | placeholder | operator secret store | HS256 JWT signing key |
+| `JWT_ISSUER` | нет | `rhapsody` | оператор | JWT issuer |
+| `JWT_AUDIENCE` | нет | `rhapsody-api` | оператор | JWT audience |
+| `TELEGRAM_BOT_TOKEN` | для bot | empty | BotFather | Telegram Bot API token |
+| `TELEGRAM_WEBHOOK_SECRET` | нет | empty | оператор | Проверка Telegram webhook secret header |
+| `AI_MODE` | для AI | empty | оператор | `gemini`, `openai`, `openrouter`, `ollama` |
+| `GEMINI_API_KEY` | если Gemini | empty | Google AI Studio | Gemini key |
+| `OPENAI_API_KEY` | если OpenAI/STT | empty | OpenAI | OpenAI key |
+| `OPENROUTER_API_KEY` | если OpenRouter | empty | OpenRouter | OpenRouter key |
+| `ANTHROPIC_API_KEY` | если используется | empty | Anthropic | Anthropic key |
+| `AZURE_OPENAI_API_KEY` | если Azure | empty | Azure | Azure OpenAI key |
+| `AZURE_OPENAI_ENDPOINT` | если Azure | empty | Azure | Azure endpoint |
+| `AZURE_OPENAI_DEPLOYMENT` | если Azure | empty | Azure | Deployment name |
+| `AZURE_OPENAI_API_VERSION` | нет | `2024-02-15-preview` | Azure docs | API version |
+| `OLLAMA_BASE_URL` | если Ollama | `http://localhost:11434` | локальный Ollama | Ollama endpoint |
+| `OLLAMA_MODEL` | если Ollama | `qwen2.5:7b` | оператор | Model name |
+| `LOCAL_LLM_BASE_URL` | private mode | `http://localhost:11434` | оператор | Local LLM endpoint |
+| `VISION_MODE` | для vision | empty | оператор | `gemini` или `openai` |
+| `STT_MODE` | для audio | empty | оператор | `local_whisper` или `openai` |
+| `LOCAL_WHISPER_MODEL` | нет | `small` | faster-whisper | Whisper model |
+| `LOCAL_WHISPER_DEVICE` | нет | `cpu` | hardware | `cpu` или GPU device |
+| `LOCAL_WHISPER_COMPUTE_TYPE` | нет | `int8` | hardware | faster-whisper compute type |
+| `LOCAL_WHISPER_LANGUAGE` | нет | `ru` | оператор | Language hint |
+| `LISTENER_ENABLED` | live-calls | `false` | оператор | Включает live-call readiness |
+| `RHAPSODY_TELEGRAM_API_ID` | live-calls | empty | Telegram app | Operator/private MTProto API ID |
+| `RHAPSODY_TELEGRAM_API_HASH` | live-calls | empty | Telegram app | Operator/private MTProto API hash |
+| `LISTENER_STORAGE_DIR` | live-calls | `/var/lib/rhapsody/listener` | Docker volume | Persistent spool |
+| `LIVE_TRANSCRIPTION_CHUNK_SECONDS` | нет | `30` | оператор | Размер live chunks |
+| `LIVE_NO_AUDIO_TIMEOUT_SECONDS` | нет | `15` | оператор | No-audio threshold |
+| `S3_ENDPOINT_URL` | storage | empty | MinIO/S3 | Object storage endpoint |
+| `S3_ACCESS_KEY_ID` | storage | empty | MinIO/S3 | Access key |
+| `S3_SECRET_ACCESS_KEY` | storage | empty | MinIO/S3 | Secret key |
+| `S3_BUCKET` | storage | `rhapsody` | MinIO/S3 | Bucket |
+| `SENTRY_DSN` | нет | empty | Sentry | Error reporting |
+| `RATE_LIMIT_PER_MINUTE` | нет | `120` | оператор | Rate limit setting |
+| `LOG_LEVEL` | нет | `INFO` | оператор | Logging level |
+| `CORS_ORIGINS` | нет | `http://localhost:3000` | frontend deployment | CSV/JSON allowed origins |
+
+<Warning>
+`.env` не должен попадать в git. Используйте демонстрационные значения в документации и реальные secrets только в локальном или production secret store.
+</Warning>

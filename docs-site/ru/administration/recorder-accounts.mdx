@@ -1,0 +1,28 @@
+---
+title: "Recorder accounts"
+description: "Операторское управление listener_accounts."
+---
+
+Recorder account хранится в таблице `listener_accounts`.
+
+Поля:
+
+- `telegram_user_id`
+- `username`
+- `display_name`
+- `encrypted_session`
+- `status`
+- `current_call_session_id`
+- `last_heartbeat_at`
+- `failure_count`
+- `cooldown_until`
+
+Создание session:
+
+```bash
+docker compose run --rm api python scripts/create_telegram_session.py
+```
+
+<Warning>
+`encrypted_session` нельзя выводить в logs, issues, README или docs. Для shared environments session должна быть зашифрована через application `ENCRYPTION_KEY`.
+</Warning>
