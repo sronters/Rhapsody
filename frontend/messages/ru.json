@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "title": "Rhapsody Admin",
+    "description": "Административная консоль Rhapsody"
+  },
+  "home": {
+    "eyebrow": "Enterprise-консоль",
+    "title": "Rhapsody Admin",
+    "description": "Панель оператора для управления tenant-ами, AI-провайдерами, аудитом и настройками private deployment.",
+    "placeholder": "Enterprise-ready модуль-заглушка.",
+    "language": "Язык",
+    "switchTo": "English",
+    "sections": [
+      "Организации",
+      "Рабочие пространства",
+      "Участники",
+      "Задачи",
+      "Решения",
+      "Поиск по памяти",
+      "Ключи провайдеров",
+      "Журнал аудита",
+      "Настройки deployment"
+    ]
+  }
+}

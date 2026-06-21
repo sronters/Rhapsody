@@ -3,7 +3,7 @@ from __future__ import annotations
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from app.bot.services import (
     SUPPORTED_DOCUMENT_TYPES,
@@ -13,6 +13,7 @@ from app.bot.services import (
 )
 from app.bot.states import AskStates, DocumentStates, MeetingStates, TaskStates
 from app.db.session import AsyncSessionFactory
+from app.i18n import t
 from app.listener.adapters import ListenerError
 from app.listener.service import LiveMeetingListenerService
 
@@ -44,6 +45,9 @@ HELP_TEXT = """Commands:
 /audit - show recent audit events
 /reminders - show upcoming task reminders
 /status - show task status summary
+/connect_calls - connect call recording for this group
+/call_setup - show recorder setup instructions
+/recorder_status - show Rhapsody Recorder pool status
 /listen - start live group call listening
 /stop_listen - stop live listening and generate a report
 /live_status - show live listener status"""
@@ -54,16 +58,49 @@ SETUP_REQUIRED = "Сначала выберите проект: /projects или
 @router.message(Command("start"))
 async def start(message: Message, state: FSMContext) -> None:
     await state.clear()
-    await message.answer(
-        "Rhapsody подключает Telegram-чат к памяти команды.\n\n"
-        "Начни с /setup. Потом отправь голосовое, документ или заметки встречи.\n\n"
-        "Основное:\n"
-        "/meeting — разобрать встречу\n"
-        "/ask — спросить по памяти\n"
-        "/tasks — задачи\n"
-        "/document — добавить документ\n"
-        "/menu — меню команд"
-    )
+    locale = await _message_locale(message)
+    await message.answer(t("telegram.start", locale), reply_markup=_language_keyboard())
+
+
+@router.message(Command("language", "lang"))
+async def language(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    locale = await _message_locale(message)
+    await message.answer(t("telegram.language_prompt", locale), reply_markup=_language_keyboard())
+
+
+@router.callback_query(F.data.startswith("locale:"))
+async def language_callback(callback: CallbackQuery) -> None:
+    message = callback.message
+    if message is None:
+        await callback.answer()
+        return
+    requested_locale = (callback.data or "locale:en").split(":", maxsplit=1)[1]
+    current_locale = await _message_locale(message, callback.from_user.id)
+    try:
+        async with AsyncSessionFactory() as session:
+            saved_locale = await TelegramProductService(session).set_locale_for_chat(
+                callback.from_user.id,
+                callback.from_user.full_name,
+                message.chat.id,
+                message.chat.type,
+                requested_locale,
+            )
+    except ValueError:
+        await callback.answer(
+            t("telegram.language_group_requires_setup", current_locale),
+            show_alert=True,
+        )
+        return
+    except PermissionError:
+        await callback.answer(
+            t("telegram.language_group_requires_manager", current_locale),
+            show_alert=True,
+        )
+        return
+    key = "telegram.language_saved_ru" if saved_locale == "ru" else "telegram.language_saved"
+    await callback.answer(t(key, saved_locale), show_alert=True)
+    await message.answer(t(key, saved_locale))
 
 
 @router.message(Command("help"))
@@ -75,14 +112,7 @@ async def help_command(message: Message, state: FSMContext) -> None:
 @router.message(Command("menu"))
 async def menu(message: Message, state: FSMContext) -> None:
     await state.clear()
-    await message.answer(
-        "Меню Rhapsody\n\n"
-        "Память: /ask, /topics, /topic\n"
-        "Встречи и документы: /meeting, /document\n"
-        "Работа: /tasks, /task_done, /task_status, /decisions\n"
-        "Контроль: /digest_today, /digest_week, /attention, /reminders, /status\n"
-        "Проекты и люди: /project, /projects, /project_new, /project_use, /members, /people"
-    )
+    await message.answer(t("telegram.menu", await _message_locale(message)))
 
 
 @router.message(Command("setup"))
@@ -97,12 +127,15 @@ async def setup(message: Message, state: FSMContext) -> None:
             chat_type=message.chat.type,
         )
     if context is None:
-        await message.answer(SETUP_REQUIRED)
+        await message.answer(t("telegram.setup_required", await _message_locale(message)))
         return
     await message.answer(
-        f"Чат подключён.\nАктивный проект: {context.workspace_name}\n"
-        f"Твоя роль: {context.role}\n\n"
-        "Дальше можно отправить /meeting, /document или /ask."
+        t(
+            "telegram.setup_success",
+            await _message_locale(message),
+            workspace_name=context.workspace_name,
+            role=context.role,
+        )
     )
 
 
@@ -224,12 +257,11 @@ async def role(message: Message, state: FSMContext) -> None:
 async def meeting(message: Message, state: FSMContext) -> None:
     await state.clear()
     if not await _has_selected_project(message):
-        await message.answer(SETUP_REQUIRED)
+        await message.answer(t("telegram.setup_required", await _message_locale(message)))
         return
     await state.set_state(MeetingStates.waiting_for_transcript)
     await message.answer(
-        "Отправь текст встречи, голосовое, аудио, видео или файл с заметками "
-        f"({SUPPORTED_DOCUMENT_TYPES})."
+        t("telegram.meeting_prompt", await _message_locale(message), types=SUPPORTED_DOCUMENT_TYPES)
     )
 
 
@@ -317,10 +349,16 @@ async def _ingest_meeting_text(message: Message, transcript: str) -> None:
 async def document(message: Message, state: FSMContext) -> None:
     await state.clear()
     if not await _has_selected_project(message):
-        await message.answer(SETUP_REQUIRED)
+        await message.answer(t("telegram.setup_required", await _message_locale(message)))
         return
     await state.set_state(DocumentStates.waiting_for_document)
-    await message.answer(f"Отправь текст документа или файл ({SUPPORTED_DOCUMENT_TYPES}).")
+    await message.answer(
+        t(
+            "telegram.document_prompt",
+            await _message_locale(message),
+            types=SUPPORTED_DOCUMENT_TYPES,
+        )
+    )
 
 
 @router.message(DocumentStates.waiting_for_document, F.text & ~F.text.startswith("/"))
@@ -414,7 +452,7 @@ async def receive_document_photo(message: Message, state: FSMContext) -> None:
 async def receive_audio_document(message: Message, state: FSMContext) -> None:
     await state.clear()
     await message.answer(
-        "Recordings are processed as meetings. Use /meeting and send the recording there."
+        t("telegram.recordings_are_meetings", await _message_locale(message))
     )
 
 
@@ -426,10 +464,10 @@ async def ask(message: Message, state: FSMContext) -> None:
         await _answer_question(message, question)
         return
     if not await _has_selected_project(message):
-        await message.answer(SETUP_REQUIRED)
+        await message.answer(t("telegram.setup_required", await _message_locale(message)))
         return
     await state.set_state(AskStates.waiting_for_question)
-    await message.answer("Что нужно найти в памяти проекта?")
+    await message.answer(t("telegram.ask_prompt", await _message_locale(message)))
 
 
 @router.message(AskStates.waiting_for_question, F.text & ~F.text.startswith("/"))
@@ -476,14 +514,14 @@ async def task_done(message: Message, state: FSMContext) -> None:
         await _update_task_status(message, int(args[0]), "done")
         return
     await state.set_state(TaskStates.waiting_for_done_task)
-    await message.answer("Отправь номер задачи. Список можно посмотреть через /tasks.")
+    await message.answer(t("telegram.task_number_prompt", await _message_locale(message)))
 
 
 @router.message(TaskStates.waiting_for_done_task, F.text & ~F.text.startswith("/"))
 async def receive_done_task(message: Message, state: FSMContext) -> None:
     await state.clear()
     if not (message.text or "").strip().isdigit():
-        await message.answer("Отправь номер задачи. Список можно посмотреть через /tasks.")
+        await message.answer(t("telegram.task_number_prompt", await _message_locale(message)))
         return
     await _update_task_status(message, int((message.text or "").strip()), "done")
 
@@ -497,8 +535,7 @@ async def task_status(message: Message, state: FSMContext) -> None:
         return
     await state.set_state(TaskStates.waiting_for_status_update)
     await message.answer(
-        "Отправь номер задачи и статус, например: 2 in_progress.\n"
-        "Статусы: open, in_progress, blocked, done, cancelled."
+        t("telegram.task_status_prompt", await _message_locale(message))
     )
 
 
@@ -584,11 +621,136 @@ async def person(message: Message, state: FSMContext) -> None:
     await _send_context_result(message, "person", name)
 
 
+@router.message(Command("connect_calls", "call_setup"))
+async def call_setup(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    if not is_live_listening_chat_type(message.chat.type):
+        await message.answer(
+            t("telegram.call_recording_group_only", await _message_locale(message))
+        )
+        return
+    async with AsyncSessionFactory() as session:
+        product_service = TelegramProductService(session)
+        context = await product_service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
+        if context is None:
+            await message.answer(SETUP_REQUIRED)
+            return
+        result = await LiveMeetingListenerService(session).call_setup(context, message.chat.id)
+    await message.answer(result.message, reply_markup=_call_setup_keyboard())
+
+
+@router.message(Command("recorder_status"))
+async def recorder_status(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    if not is_live_listening_chat_type(message.chat.type):
+        await message.answer("Recorder status is only available in Telegram groups.")
+        return
+    async with AsyncSessionFactory() as session:
+        product_service = TelegramProductService(session)
+        context = await product_service.context_for_chat(
+            message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
+        if context is None:
+            await message.answer(SETUP_REQUIRED)
+            return
+        result = await LiveMeetingListenerService(session).recorder_status(
+            context,
+            message.chat.id,
+        )
+    await message.answer(result.message)
+
+
+@router.callback_query(F.data == "recorder_status")
+async def recorder_status_callback(callback: CallbackQuery) -> None:
+    message = callback.message
+    if message is None:
+        await callback.answer("Open the group chat and use /recorder_status.")
+        return
+    async with AsyncSessionFactory() as session:
+        product_service = TelegramProductService(session)
+        context = await product_service.context_for_chat(
+            callback.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
+        if context is None:
+            await callback.answer("Run /setup first.", show_alert=True)
+            return
+        result = await LiveMeetingListenerService(session).recorder_status(
+            context,
+            message.chat.id,
+        )
+    await callback.answer()
+    await message.answer(result.message)
+
+
+@router.callback_query(F.data == "start_listen")
+async def start_listen_callback(callback: CallbackQuery) -> None:
+    message = callback.message
+    if message is None:
+        await callback.answer("Open the group chat and use /listen.")
+        return
+    async with AsyncSessionFactory() as session:
+        product_service = TelegramProductService(session)
+        context = await product_service.context_for_chat(
+            callback.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
+        if context is None:
+            await callback.answer("Run /setup first.", show_alert=True)
+            return
+        try:
+            result = await LiveMeetingListenerService(session).start_listening(
+                context,
+                message.chat.id,
+            )
+        except ListenerError as exc:
+            await callback.answer(str(exc), show_alert=True)
+            return
+    await callback.answer()
+    await message.answer(result.message)
+
+
+@router.callback_query(F.data == "disable_call_recording")
+async def disable_call_recording_callback(callback: CallbackQuery) -> None:
+    message = callback.message
+    if message is None:
+        await callback.answer("Open the group chat and use /stop_listen.")
+        return
+    async with AsyncSessionFactory() as session:
+        product_service = TelegramProductService(session)
+        context = await product_service.context_for_chat(
+            callback.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
+        if context is None:
+            await callback.answer("Run /setup first.", show_alert=True)
+            return
+        try:
+            result = await LiveMeetingListenerService(session).stop_listening(
+                context,
+                message.chat.id,
+            )
+        except ListenerError:
+            await callback.answer("No active listener is running.", show_alert=True)
+            return
+    await callback.answer()
+    await message.answer(result.report)
+
+
 @router.message(Command("listen"))
 async def listen(message: Message, state: FSMContext) -> None:
     await state.clear()
     if not is_live_listening_chat_type(message.chat.type):
-        await message.answer("Live call listening can only be started in a Telegram group.")
+        await message.answer(t("telegram.live_group_only", await _message_locale(message)))
         return
     async with AsyncSessionFactory() as session:
         product_service = TelegramProductService(session)
@@ -615,7 +777,7 @@ async def listen(message: Message, state: FSMContext) -> None:
 async def stop_listen(message: Message, state: FSMContext) -> None:
     await state.clear()
     if not is_live_listening_chat_type(message.chat.type):
-        await message.answer("Live call listening is only available in Telegram groups.")
+        await message.answer(t("telegram.live_group_only", await _message_locale(message)))
         return
     async with AsyncSessionFactory() as session:
         product_service = TelegramProductService(session)
@@ -643,7 +805,7 @@ async def stop_listen(message: Message, state: FSMContext) -> None:
 async def live_status(message: Message, state: FSMContext) -> None:
     await state.clear()
     if not is_live_listening_chat_type(message.chat.type):
-        await message.answer("Live call listening status is only available in Telegram groups.")
+        await message.answer(t("telegram.live_group_only", await _message_locale(message)))
         return
     async with AsyncSessionFactory() as session:
         product_service = TelegramProductService(session)
@@ -795,7 +957,7 @@ async def _send_context_result(message: Message, method_name: str, *args: object
             message.chat.type,
         )
         if context is None:
-            await message.answer(SETUP_REQUIRED)
+            await message.answer(t("telegram.setup_required", await _message_locale(message)))
             return
         try:
             result = await getattr(service, method_name)(context, *args)
@@ -814,7 +976,7 @@ async def _update_task_status(message: Message, task_number: int, status: str) -
             message.chat.type,
         )
         if context is None:
-            await message.answer(SETUP_REQUIRED)
+            await message.answer(t("telegram.setup_required", await _message_locale(message)))
             return
         try:
             result = await service.update_task_status(context, task_number, status)
@@ -847,3 +1009,40 @@ def _message_media(message: Message):
 
 def is_live_listening_chat_type(chat_type: str) -> bool:
     return chat_type in {"group", "supergroup"}
+
+
+def _call_setup_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Check connection", callback_data="recorder_status"),
+                InlineKeyboardButton(text="Start listening", callback_data="start_listen"),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="Disable call recording",
+                    callback_data="disable_call_recording",
+                )
+            ],
+        ]
+    )
+
+
+async def _message_locale(message: Message, telegram_user_id: int | None = None) -> str:
+    async with AsyncSessionFactory() as session:
+        return await TelegramProductService(session).locale_for_chat(
+            telegram_user_id or message.from_user.id,
+            message.chat.id,
+            message.chat.type,
+        )
+
+
+def _language_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="English", callback_data="locale:en"),
+                InlineKeyboardButton(text="Русский", callback_data="locale:ru"),
+            ]
+        ]
+    )

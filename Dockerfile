@@ -16,6 +16,7 @@ RUN pip install --upgrade pip && pip install ".[dev,listener-session]"
 COPY alembic.ini ./
 COPY migrations ./migrations
 COPY app ./app
+COPY scripts ./scripts
 COPY tests ./tests
 
 EXPOSE 8000

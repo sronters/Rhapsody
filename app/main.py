@@ -11,6 +11,7 @@ from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 from app.core.middleware import InMemoryRateLimitMiddleware, RequestContextMiddleware
+from app.i18n.middleware import LocaleMiddleware
 
 
 @asynccontextmanager
@@ -31,6 +32,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
     app.add_middleware(InMemoryRateLimitMiddleware)
+    app.add_middleware(LocaleMiddleware)
     app.add_middleware(RequestContextMiddleware)
     app.add_middleware(
         CORSMiddleware,

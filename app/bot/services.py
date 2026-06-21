@@ -26,13 +26,19 @@ from app.db.models import (
     Workspace,
     WorkspaceMember,
 )
+from app.i18n.locale import normalize_locale
 from app.schemas.documents import DocumentIngestRequest
 from app.schemas.memory import MemoryQuestion, MemorySource
 from app.services.document_parsing import UnsupportedDocumentTypeError, extract_text_from_document
 from app.services.documents import DocumentService
 from app.services.embeddings import EmbeddingService
 from app.services.memory import rank_memory_chunks
-from app.services.product_ai import AIConfigurationError, AIResponseError, ProductAIClient
+from app.services.product_ai import (
+    AIConfigurationError,
+    AIResponseError,
+    LLMMeetingExtraction,
+    ProductAIClient,
+)
 from app.services.stt import SpeechToTextService, STTConfigurationError, STTResponseError
 from app.services.vision import (
     ImageUnderstandingService,
@@ -59,6 +65,7 @@ class BotContext:
     workspace_name: str = "Workspace"
     telegram_chat_id: int | None = None
     chat_type: str = "private"
+    locale: str = "en"
 
 
 class TelegramProductService:
@@ -108,6 +115,57 @@ class TelegramProductService:
             audit_source="telegram_setup",
         )
 
+    async def locale_for_chat(
+        self,
+        telegram_user_id: int,
+        telegram_chat_id: int,
+        chat_type: str = "private",
+    ) -> str:
+        user = (
+            await self.session.scalars(
+                select(User).where(User.telegram_user_id == telegram_user_id)
+            )
+        ).first()
+        if user is None:
+            return normalize_locale(None)
+        if is_group_chat_type(chat_type):
+            chat = await self._active_chat_for_telegram_chat(telegram_chat_id, user.id, chat_type)
+            return normalize_locale(chat.locale if chat is not None else user.locale)
+        return normalize_locale(user.locale)
+
+    async def set_locale_for_chat(
+        self,
+        telegram_user_id: int,
+        display_name: str,
+        telegram_chat_id: int,
+        chat_type: str,
+        locale: str,
+    ) -> str:
+        normalized = normalize_locale(locale)
+        user = await self._get_or_create_user(telegram_user_id, display_name)
+        if is_group_chat_type(chat_type):
+            chat = await self._active_chat_for_telegram_chat(telegram_chat_id, user.id, chat_type)
+            if chat is None:
+                raise ValueError("group_requires_setup")
+            member = (
+                await self.session.scalars(
+                    select(WorkspaceMember).where(
+                        WorkspaceMember.workspace_id == chat.workspace_id,
+                        WorkspaceMember.user_id == user.id,
+                    )
+                )
+            ).first()
+            if member is None or member.role not in MANAGE_ROLES:
+                raise PermissionError("group_requires_manager")
+            chat.locale = normalized
+        else:
+            user.locale = normalized
+            chat = await self._active_chat_for_telegram_chat(telegram_chat_id, user.id, chat_type)
+            if chat is not None:
+                chat.locale = normalized
+        await self.session.commit()
+        return normalized
+
     async def context_for_chat(
         self,
         telegram_user_id: int,
@@ -152,13 +210,14 @@ class TelegramProductService:
             workspace.name,
             telegram_chat_id,
             chat_type,
+            chat.locale if is_group_chat_type(chat_type) else user.locale,
         )
 
     async def ingest_meeting(self, context: BotContext, transcript: str) -> str:
         require_write_access(context)
         if not transcript.strip():
             return "Please send meeting notes with readable text."
-        extraction = await self.ai_client.extract_meeting(transcript)
+        extraction = await self._extract_meeting(transcript, context.locale)
         meeting = Meeting(
             workspace_id=context.workspace_id,
             title="Telegram meeting notes",
@@ -450,8 +509,25 @@ class TelegramProductService:
             )
             for chunk in chunks
         ]
-        ai_answer = await self.ai_client.answer_question(question, sources)
+        ai_answer = await self._answer_question(question, sources, context.locale)
         return format_answer(ai_answer, sources)
+
+    async def _extract_meeting(self, transcript: str, locale: str) -> LLMMeetingExtraction:
+        try:
+            return await self.ai_client.extract_meeting(transcript, locale=locale)
+        except TypeError:
+            return await self.ai_client.extract_meeting(transcript)
+
+    async def _answer_question(
+        self,
+        question: str,
+        sources: list[MemorySource],
+        locale: str,
+    ) -> str:
+        try:
+            return await self.ai_client.answer_question(question, sources, locale=locale)
+        except TypeError:
+            return await self.ai_client.answer_question(question, sources)
 
     async def list_tasks(self, context: BotContext) -> str:
         rows = await self._ordered_tasks(context)
@@ -1231,6 +1307,7 @@ class TelegramProductService:
             workspace.name,
             telegram_chat_id,
             chat_type,
+            user.locale,
         )
 
     async def _select_workspace_for_chat(
@@ -1261,6 +1338,7 @@ class TelegramProductService:
                 selected_by_user_id=selected_by_user_id,
                 chat_type=normalize_chat_type(chat_type),
                 title=chat_title,
+                locale=user.locale,
                 is_active=True,
             )
             self.session.add(chat)

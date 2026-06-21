@@ -1,6 +1,7 @@
 .env
 .env.*
 !.env.example
+!.env.oracle.example
 .venv/
 __pycache__/
 *.py[cod]
@@ -10,8 +11,16 @@ rhapsody.egg-info/
 .ruff_cache/
 .coverage
 htmlcov/
+node_modules/
+docs-site/node_modules/
+.next/
+frontend/.next/
 .mypy_cache/
 .DS_Store
 pgdata/
 miniodata/
+backups/
+listener-data/
+*.session
+*.session-journal
 *.log

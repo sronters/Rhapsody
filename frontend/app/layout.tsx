@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 
 export const metadata = {
   title: 'Rhapsody Admin',
-  description: 'Enterprise admin console for Rhapsody',
+  description: 'Bilingual enterprise admin console for Rhapsody',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {

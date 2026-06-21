@@ -68,6 +68,7 @@ class User(Base, TimestampMixin):
     telegram_user_id: Mapped[int | None] = mapped_column(BigInteger, unique=True)
     display_name: Mapped[str] = mapped_column(String(160), nullable=False)
     email: Mapped[str | None] = mapped_column(String(320))
+    locale: Mapped[str] = mapped_column(String(8), nullable=False, default="en")
 
 
 class WorkspaceMember(Base, TimestampMixin):
@@ -92,6 +93,7 @@ class TelegramChat(Base):
     selected_by_user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
     chat_type: Mapped[str] = mapped_column(String(32), nullable=False, default="private")
     title: Mapped[str | None] = mapped_column(String(240))
+    locale: Mapped[str] = mapped_column(String(8), nullable=False, default="en")
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
 
@@ -202,6 +204,76 @@ class LiveMeetingSession(Base, TimestampMixin):
     report_text: Mapped[str | None] = mapped_column(Text)
     audio_object_ref: Mapped[str | None] = mapped_column(String(512))
     error_message: Mapped[str | None] = mapped_column(Text)
+
+
+class ListenerAccount(Base, TimestampMixin, UpdateTimestampMixin):
+    __tablename__ = "listener_accounts"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    telegram_user_id: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True)
+    username: Mapped[str | None] = mapped_column(String(160))
+    display_name: Mapped[str] = mapped_column(String(160), nullable=False)
+    encrypted_session: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(40), nullable=False, default="AVAILABLE")
+    current_call_session_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    last_heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    failure_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    cooldown_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class CallSession(Base, TimestampMixin, UpdateTimestampMixin):
+    __tablename__ = "call_sessions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id"), nullable=False)
+    telegram_chat_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    telegram_group_call_id: Mapped[str | None] = mapped_column(String(160))
+    listener_account_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("listener_accounts.id")
+    )
+    requested_by_user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    live_meeting_session_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("live_meeting_sessions.id")
+    )
+    status: Mapped[str] = mapped_column(String(40), nullable=False, default="REQUESTED")
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    joined_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_audio_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    failure_code: Mapped[str | None] = mapped_column(String(80))
+    failure_message: Mapped[str | None] = mapped_column(Text)
+    reconnect_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+
+class CallAudioChunk(Base, TimestampMixin, UpdateTimestampMixin):
+    __tablename__ = "call_audio_chunks"
+    __table_args__ = (
+        UniqueConstraint(
+            "call_session_id",
+            "sequence_number",
+            name="uq_call_audio_chunks_session_sequence",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    call_session_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("call_sessions.id"), nullable=False
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id"), nullable=False)
+    sequence_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    content_type: Mapped[str] = mapped_column(String(80), nullable=False, default="audio/wav")
+    local_path: Mapped[str] = mapped_column(String(512), nullable=False)
+    object_ref: Mapped[str | None] = mapped_column(String(512))
+    duration_ms: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    byte_size: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    status: Mapped[str] = mapped_column(String(40), nullable=False, default="SPOOLED")
+    transcript: Mapped[str | None] = mapped_column(Text)
+    failure_code: Mapped[str | None] = mapped_column(String(80))
+    failure_message: Mapped[str | None] = mapped_column(Text)
+    attempt_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
 
 class AIRequest(Base, TimestampMixin):

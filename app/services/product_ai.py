@@ -63,8 +63,8 @@ class ProductAIClient:
         self.settings = settings or get_settings()
         self.http_client = http_client
 
-    async def extract_meeting(self, transcript: str) -> LLMMeetingExtraction:
-        prompt = build_meeting_extraction_prompt(transcript)
+    async def extract_meeting(self, transcript: str, locale: str = "en") -> LLMMeetingExtraction:
+        prompt = build_meeting_extraction_prompt(transcript, locale)
         text = await self.generate(prompt)
         try:
             return parse_meeting_extraction(text)
@@ -73,10 +73,15 @@ class ProductAIClient:
             repaired_text = await self.generate(repair_prompt)
             return parse_meeting_extraction(repaired_text)
 
-    async def answer_question(self, question: str, sources: list[MemorySource]) -> str:
+    async def answer_question(
+        self,
+        question: str,
+        sources: list[MemorySource],
+        locale: str = "en",
+    ) -> str:
         if not sources:
             raise AIResponseError("No memory sources are available for this question.")
-        return await self.generate(build_memory_answer_prompt(question, sources))
+        return await self.generate(build_memory_answer_prompt(question, sources, locale))
 
     async def generate(self, prompt: str) -> str:
         mode = self.settings.ai_mode
@@ -215,7 +220,8 @@ def extract_json_object(text: str) -> str:
     return stripped[start : end + 1]
 
 
-def build_meeting_extraction_prompt(transcript: str) -> str:
+def build_meeting_extraction_prompt(transcript: str, locale: str = "en") -> str:
+    language = "Russian" if locale.startswith("ru") else "English"
     return (
         "Extract meeting intelligence from the transcript. Return only strict JSON exactly "
         "matching this schema: {\"summary\": string, \"tasks\": [{\"title\": string, "
@@ -226,7 +232,8 @@ def build_meeting_extraction_prompt(transcript: str) -> str:
         "\"severity\": \"low|medium|high|critical\", \"mitigation\": string|null, "
         "\"source_text\": string|null}], "
         "\"follow_up\": string}. Do not include markdown. Do not invent facts not supported by "
-        "the transcript.\n\n"
+        f"the transcript. Write all human-readable values in {language}; keep JSON keys and "
+        "enum-like values stable.\n\n"
         f"Transcript:\n{transcript}"
     )
 
@@ -241,12 +248,18 @@ def build_json_repair_prompt(text: str) -> str:
     )
 
 
-def build_memory_answer_prompt(question: str, sources: list[MemorySource]) -> str:
+def build_memory_answer_prompt(
+    question: str,
+    sources: list[MemorySource],
+    locale: str = "en",
+) -> str:
+    language = "Russian" if locale.startswith("ru") else "English"
     source_text = "\n\n".join(
         f"[{index}] {source.source_type} — {source.source_title}\n{source.excerpt}"
         for index, source in enumerate(sources, start=1)
     )
     return (
-        "Answer the question using only the provided Rhapsody sources. Cite source numbers.\n\n"
+        "Answer the question using only the provided Rhapsody sources. Cite source numbers. "
+        f"Write the answer in {language}.\n\n"
         f"Sources:\n{source_text}\n\nQuestion: {question}\nAnswer:"
     )

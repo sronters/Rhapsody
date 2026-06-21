@@ -21,6 +21,12 @@ def test_cors_origins_accept_comma_separated_string() -> None:
     assert settings.cors_origins == ["http://localhost:3000", "http://localhost:3001"]
 
 
+def test_supported_locales_accept_comma_separated_string() -> None:
+    settings = Settings(supported_locales="en,ru")
+
+    assert settings.supported_locales == ["en", "ru"]
+
+
 def test_detects_default_encryption_key() -> None:
     assert Settings(encryption_key="replace-with-fernet-key").has_default_encryption_key
     assert not Settings(encryption_key="real-fernet-key").has_default_encryption_key

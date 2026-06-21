@@ -58,18 +58,20 @@ services:
     command: python -m app.listener.main
     env_file: .env
     environment:
+      LISTENER_ENABLED: ${LISTENER_ENABLED:-false}
+      LISTENER_STORAGE_DIR: ${LISTENER_STORAGE_DIR:-/var/lib/rhapsody/listener}
       STT_MODE: ${STT_MODE:-local_whisper}
       LOCAL_WHISPER_MODEL: ${LOCAL_WHISPER_MODEL:-small}
       LOCAL_WHISPER_DEVICE: ${LOCAL_WHISPER_DEVICE:-cpu}
       LOCAL_WHISPER_COMPUTE_TYPE: ${LOCAL_WHISPER_COMPUTE_TYPE:-int8}
       LOCAL_WHISPER_LANGUAGE: ${LOCAL_WHISPER_LANGUAGE:-ru}
-    profiles:
-      - listener
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
+    volumes:
+      - listener_spool:/var/lib/rhapsody/listener
 
   postgres:
     image: pgvector/pgvector:pg16
@@ -125,3 +127,4 @@ services:
 volumes:
   pgdata:
   miniodata:
+  listener_spool:

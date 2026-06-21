@@ -1,0 +1,46 @@
+{
+  "telegram": {
+    "start": "Rhapsody connects Telegram chats to team memory.\n\nChoose a language below, then run /setup. After that, send a voice note, document, or meeting notes.\n\nCore commands:\n/meeting - analyze a meeting\n/ask - ask team memory\n/tasks - tasks\n/document - add a document\n/menu - command menu",
+    "menu": "Rhapsody menu\n\nMemory: /ask, /topics, /topic\nMeetings and documents: /meeting, /document\nWork: /tasks, /task_done, /task_status, /decisions\nControl: /digest_today, /digest_week, /attention, /reminders, /status\nProjects and people: /project, /projects, /project_new, /project_use, /members, /people\nLanguage: /language",
+    "setup_required": "Select a project first: /projects or create a new one: /new_project Name",
+    "language_prompt": "Choose interface language.",
+    "language_saved": "Language saved: English.",
+    "language_saved_ru": "Language saved: Russian.",
+    "language_group_requires_setup": "Connect this group to a project with /setup before changing the group language.",
+    "language_group_requires_manager": "Only a project owner or admin can change the group language.",
+    "setup_success": "Chat connected.\nActive project: {workspace_name}\nYour role: {role}\n\nNext, send /meeting, /document, or /ask.",
+    "meeting_prompt": "Send meeting text, a voice note, audio, video, or notes file ({types}).",
+    "document_prompt": "Send document text or a file ({types}).",
+    "ask_prompt": "What should I find in project memory?",
+    "task_number_prompt": "Send the task number. You can see the list with /tasks.",
+    "task_status_prompt": "Send a task number and status, for example: 2 in_progress.\nStatuses: open, in_progress, blocked, done, cancelled.",
+    "recordings_are_meetings": "Recordings are processed as meetings. Use /meeting and send the recording there.",
+    "live_group_only": "Live call listening is only available in Telegram groups.",
+    "call_recording_group_only": "Call recording can only be connected in a Telegram group."
+  },
+  "live_calls": {
+    "status": {
+      "CONNECTING": "Connecting",
+      "START_REQUESTED": "Start requested",
+      "STARTING": "Starting",
+      "LISTENING": "Listening",
+      "STOP_REQUESTED": "Stop requested",
+      "STOPPING": "Stopping",
+      "TRANSCRIBING": "Transcribing",
+      "ANALYZING": "Analyzing",
+      "JOINED": "Joined",
+      "CONNECTED_NO_AUDIO": "Connected, waiting for audio",
+      "RECORDING": "Recording",
+      "RECONNECTING": "Reconnecting",
+      "FINALIZING": "Finalizing",
+      "COMPLETED": "Completed",
+      "FAILED": "Failed",
+      "CANCELLED": "Cancelled",
+      "NO_AUDIO_FRAMES": "No audio frames received"
+    }
+  },
+  "errors": {
+    "rate_limit": "Rate limit exceeded.",
+    "generic": "The request could not be completed. Please try again or check the service logs."
+  }
+}

@@ -41,7 +41,7 @@ class InMemoryRateLimitMiddleware(BaseHTTPMiddleware):
         self._buckets[key] = (window_started, count)
         if count > self.requests_per_minute:
             return JSONResponse(
-                {"detail": "Rate limit exceeded."},
+                {"code": "rate_limit_exceeded", "message": "Rate limit exceeded.", "details": {}},
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 headers={"Retry-After": str(int(self.window_seconds - (now - window_started)))},
             )

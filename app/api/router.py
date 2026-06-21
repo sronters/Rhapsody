@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from app.api.routes import (
     audit,
+    calls,
     decisions,
     documents,
     files,
@@ -28,3 +29,4 @@ api_router.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
 api_router.include_router(decisions.router, prefix="/decisions", tags=["decisions"])
 api_router.include_router(audit.router, prefix="/audit", tags=["audit"])
 api_router.include_router(telegram.router, prefix="/telegram", tags=["telegram"])
+api_router.include_router(calls.router, prefix="/calls", tags=["calls"])

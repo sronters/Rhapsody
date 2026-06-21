@@ -19,6 +19,9 @@ POLL_SECONDS = 1
 
 async def main() -> None:
     settings = get_settings()
+    if not settings.listener_enabled:
+        print("Rhapsody listener service is idle because LISTENER_ENABLED is false.")
+        await asyncio.Event().wait()
     validate_listener_configuration(settings)
     diagnostics = await collect_listener_diagnostics(settings)
     print("Rhapsody listener diagnostics:")

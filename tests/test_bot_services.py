@@ -17,6 +17,7 @@ from app.db.models import (
     MemoryChunk,
     Task,
     TelegramChat,
+    User,
     WorkspaceMember,
 )
 from app.services.document_parsing import UnsupportedDocumentTypeError
@@ -178,6 +179,57 @@ async def test_private_project_selection_is_scoped_per_user(session_factory) -> 
     assert owner.workspace_id != member.workspace_id
     assert owner.role == "owner"
     assert member.role == "owner"
+
+
+@pytest.mark.asyncio
+async def test_private_locale_is_stored_on_user(session_factory) -> None:
+    async with session_factory() as session:
+        service = TelegramProductService(session, ai_client=FakeAIClient())
+        await service.setup(telegram_user_id=1, display_name="User", telegram_chat_id=10)
+        saved = await service.set_locale_for_chat(1, "User", 10, "private", "ru")
+        user = (
+            await session.scalars(select(User).where(User.telegram_user_id == 1))
+        ).one()
+
+    assert saved == "ru"
+    assert user.locale == "ru"
+
+
+@pytest.mark.asyncio
+async def test_group_locale_requires_owner_or_admin(session_factory) -> None:
+    async with session_factory() as session:
+        service = TelegramProductService(session, ai_client=FakeAIClient())
+        await service.create_project_for_telegram_user(
+            1,
+            "Owner",
+            -100,
+            "group",
+            "Group Project",
+            "Team",
+        )
+        owner_context = await service.context_for_chat(1, -100, "group")
+        assert owner_context is not None
+        saved = await service.set_locale_for_chat(1, "Owner", -100, "group", "ru")
+
+        intruder = await service._get_or_create_user(2, "Intruder")
+        member = WorkspaceMember(
+            workspace_id=owner_context.workspace_id,
+            user_id=intruder.id,
+            role="member",
+        )
+        session.add(member)
+        await session.commit()
+        try:
+            await service.set_locale_for_chat(2, "Intruder", -100, "group", "en")
+        except PermissionError as exc:
+            error = exc
+        else:
+            error = None
+        chat = (await session.scalars(select(TelegramChat))).one()
+
+    assert saved == "ru"
+    assert chat.locale == "ru"
+    assert isinstance(error, PermissionError)
 
 
 @pytest.mark.asyncio

@@ -37,7 +37,7 @@ dev = [
     "ruff>=0.6.9",
 ]
 listener-session = [
-    "py-tgcalls>=2.3.0",
+    "py-tgcalls==2.3.3",
     "pyrogram>=2.0.106",
     "python-dotenv>=1.0.1",
     "tgcrypto>=1.2.5",

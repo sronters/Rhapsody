@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     deployment_mode: DeploymentMode = "cloud"
     ai_mode: AIMode | None = None
     api_base_url: str = "http://localhost:8000"
+    default_locale: str = "en"
+    supported_locales: Annotated[list[str], NoDecode] = Field(default_factory=lambda: ["en", "ru"])
     database_url: str = "postgresql+asyncpg://rhapsody:rhapsody@localhost:5432/rhapsody"
     redis_url: str = "redis://localhost:6379/0"
     service_api_keys: Annotated[list[str], NoDecode] = Field(
@@ -48,11 +50,14 @@ class Settings(BaseSettings):
     local_whisper_language: str | None = "ru"
     vision_mode: VisionMode | None = None
     listener_enabled: bool = False
+    rhapsody_telegram_api_id: int | None = None
+    rhapsody_telegram_api_hash: str | None = None
     telegram_api_id: int | None = None
     telegram_api_hash: str | None = None
     telegram_user_session: str | None = None
-    listener_storage_dir: str = "/tmp/rhapsody-listener"  # noqa: S108 - operator-configurable.
+    listener_storage_dir: str = "/var/lib/rhapsody/listener"
     live_transcription_chunk_seconds: int = 30
+    live_no_audio_timeout_seconds: int = 15
     s3_endpoint_url: str | None = None
     s3_access_key_id: str | None = None
     s3_secret_access_key: str | None = None
@@ -67,7 +72,7 @@ class Settings(BaseSettings):
         default_factory=lambda: ["http://localhost:3000"]
     )
 
-    @field_validator("service_api_keys", "cors_origins", mode="before")
+    @field_validator("service_api_keys", "cors_origins", "supported_locales", mode="before")
     @classmethod
     def split_csv(cls, value: str | list[str]) -> list[str]:
         if isinstance(value, str):
@@ -87,6 +92,7 @@ class Settings(BaseSettings):
         "stt_mode",
         "vision_mode",
         "local_whisper_language",
+        "rhapsody_telegram_api_id",
         "telegram_api_id",
         mode="before",
     )
@@ -103,6 +109,14 @@ class Settings(BaseSettings):
     @property
     def has_default_encryption_key(self) -> bool:
         return self.encryption_key == "replace-with-fernet-key"
+
+    @property
+    def telegram_app_api_id(self) -> int | None:
+        return self.rhapsody_telegram_api_id or self.telegram_api_id
+
+    @property
+    def telegram_app_api_hash(self) -> str | None:
+        return self.rhapsody_telegram_api_hash or self.telegram_api_hash
 
 
 @lru_cache

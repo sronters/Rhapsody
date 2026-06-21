@@ -39,15 +39,28 @@ class ListenerStartResult:
 
 
 @dataclass(frozen=True)
+class ListenerCapturedChunk:
+    sequence_number: int
+    local_path: str
+    byte_size: int
+    duration_ms: int
+    transcript: str | None = None
+    content_type: str = "audio/wav"
+
+
+@dataclass(frozen=True)
 class ListenerStopResult:
     transcript: str
     audio_object_ref: str | None = None
+    chunks: tuple[ListenerCapturedChunk, ...] = ()
 
 
 @dataclass(frozen=True)
 class ListenerRuntimeStatus:
     active: bool
     detail: str
+    frames_seen: int = 0
+    transcript_chunks: int = 0
 
 
 class MeetingListenerAdapter(Protocol):
@@ -56,6 +69,7 @@ class MeetingListenerAdapter(Protocol):
         session_id: UUID,
         telegram_chat_id: int,
         workspace_id: UUID,
+        recorder_session: str | None = None,
     ) -> ListenerStartResult:
         ...
 
@@ -113,10 +127,12 @@ class _ActiveCall:
     stt_service: SpeechToTextService
     frames: bytearray = field(default_factory=bytearray)
     transcript_parts: list[str] = field(default_factory=list)
+    captured_chunks: list[ListenerCapturedChunk] = field(default_factory=list)
     transcribe_tasks: set[asyncio.Task] = field(default_factory=set)
     started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     stopped: bool = False
     frames_seen: int = 0
+    next_sequence_number: int = 1
 
     @property
     def chunk_bytes(self) -> int:
@@ -140,6 +156,11 @@ class _ActiveCall:
         self.frames.clear()
         return chunk
 
+    def reserve_sequence_number(self) -> int:
+        sequence_number = self.next_sequence_number
+        self.next_sequence_number += 1
+        return sequence_number
+
 
 class MTProtoMeetingListenerAdapter:
     _active_calls: dict[UUID, _ActiveCall] = {}
@@ -152,10 +173,16 @@ class MTProtoMeetingListenerAdapter:
         session_id: UUID,
         telegram_chat_id: int,
         workspace_id: UUID,
+        recorder_session: str | None = None,
     ) -> ListenerStartResult:
         self._ensure_runtime_available()
         if session_id in self._active_calls:
             raise ListenerJoinError("A listener runtime is already attached to this session.")
+        session_string = recorder_session or self.settings.telegram_user_session
+        if not session_string:
+            raise ListenerConfigurationError(
+                "No Rhapsody Recorder account session is available for this call."
+            )
 
         from pytgcalls import PyTgCalls
         from pytgcalls import filters as call_filters
@@ -170,9 +197,9 @@ class MTProtoMeetingListenerAdapter:
         await asyncio.to_thread(audio_path.write_bytes, b"")
 
         telegram_client = TelegramClient(
-            StringSession(self.settings.telegram_user_session),
-            int(self.settings.telegram_api_id or 0),
-            self.settings.telegram_api_hash or "",
+            StringSession(session_string),
+            int(self.settings.telegram_app_api_id or 0),
+            self.settings.telegram_app_api_hash or "",
         )
         call_client = PyTgCalls(telegram_client)
         active_call = _ActiveCall(
@@ -197,7 +224,10 @@ class MTProtoMeetingListenerAdapter:
             for frame in update.frames:
                 chunk = active_call.append_frame(frame.frame)
                 if chunk is not None:
-                    task = asyncio.create_task(self._transcribe_chunk(active_call, chunk))
+                    sequence_number = active_call.reserve_sequence_number()
+                    task = asyncio.create_task(
+                        self._transcribe_chunk(active_call, chunk, sequence_number)
+                    )
                     active_call.transcribe_tasks.add(task)
                     task.add_done_callback(active_call.transcribe_tasks.discard)
 
@@ -233,7 +263,11 @@ class MTProtoMeetingListenerAdapter:
 
         final_chunk = active_call.drain_frames()
         if final_chunk is not None:
-            await self._transcribe_chunk(active_call, final_chunk)
+            await self._transcribe_chunk(
+                active_call,
+                final_chunk,
+                active_call.reserve_sequence_number(),
+            )
         if active_call.transcribe_tasks:
             await asyncio.gather(*active_call.transcribe_tasks)
 
@@ -260,6 +294,7 @@ class MTProtoMeetingListenerAdapter:
         return ListenerStopResult(
             transcript=transcript,
             audio_object_ref=str(active_call.audio_path),
+            chunks=tuple(active_call.captured_chunks),
         )
 
     async def status(self, session_id: UUID) -> ListenerRuntimeStatus:
@@ -268,6 +303,8 @@ class MTProtoMeetingListenerAdapter:
             return ListenerRuntimeStatus(active=False, detail="No MTProto listener is connected.")
         return ListenerRuntimeStatus(
             active=True,
+            frames_seen=active_call.frames_seen,
+            transcript_chunks=len(active_call.transcript_parts),
             detail=(
                 "Connected to Telegram group call. "
                 f"Captured frames: {active_call.frames_seen}. "
@@ -286,10 +323,26 @@ class MTProtoMeetingListenerAdapter:
                 "(py-tgcalls, NTgCalls, Telethon) plus a Telegram user session."
             ) from exc
 
-    async def _transcribe_chunk(self, active_call: _ActiveCall, chunk: bytes) -> None:
+    async def _transcribe_chunk(
+        self,
+        active_call: _ActiveCall,
+        chunk: bytes,
+        sequence_number: int,
+    ) -> None:
         wav_content = pcm_to_wav(chunk, active_call.sample_rate, active_call.channels)
-        chunk_name = f"{active_call.session_id}-{len(active_call.transcript_parts) + 1}.wav"
+        chunk_name = f"{active_call.session_id}-{sequence_number:06d}.wav"
+        chunk_path = active_call.audio_path.parent / chunk_name
+        await asyncio.to_thread(chunk_path.write_bytes, wav_content)
         text = await active_call.stt_service.transcribe(wav_content, chunk_name, "audio/wav")
+        active_call.captured_chunks.append(
+            ListenerCapturedChunk(
+                sequence_number=sequence_number,
+                local_path=str(chunk_path),
+                byte_size=len(wav_content),
+                duration_ms=pcm_duration_ms(chunk, active_call.sample_rate, active_call.channels),
+                transcript=text.strip() or None,
+            )
+        )
         if text.strip():
             active_call.transcript_parts.append(text.strip())
 
@@ -332,6 +385,14 @@ def pcm_to_wav(pcm_data: bytes, sample_rate: int, channels: int) -> bytes:
     return header + pcm_data
 
 
+def pcm_duration_ms(pcm_data: bytes, sample_rate: int, channels: int) -> int:
+    bytes_per_sample = 2
+    if sample_rate <= 0 or channels <= 0:
+        return 0
+    frame_count = len(pcm_data) / (channels * bytes_per_sample)
+    return int((frame_count / sample_rate) * 1000)
+
+
 def package_version(distribution: str) -> str | None:
     try:
         return metadata.version(distribution)
@@ -355,15 +416,16 @@ async def collect_listener_diagnostics(settings: Settings) -> LiveRuntimeDiagnos
         "telethon"
     )
 
-    if config_valid and settings.telegram_user_session:
+    diagnostic_session = settings.telegram_user_session
+    if config_valid and diagnostic_session:
         try:
             from telethon import TelegramClient
             from telethon.sessions import StringSession
 
             client = TelegramClient(
-                StringSession(settings.telegram_user_session),
-                int(settings.telegram_api_id or 0),
-                settings.telegram_api_hash or "",
+                StringSession(diagnostic_session),
+                int(settings.telegram_app_api_id or 0),
+                settings.telegram_app_api_hash or "",
             )
             await client.connect()
             try:
@@ -403,12 +465,10 @@ def validate_listener_configuration(settings: Settings) -> None:
     missing: list[str] = []
     if not settings.listener_enabled:
         missing.append("LISTENER_ENABLED=true")
-    if settings.telegram_api_id is None:
-        missing.append("TELEGRAM_API_ID")
-    if not settings.telegram_api_hash:
-        missing.append("TELEGRAM_API_HASH")
-    if not settings.telegram_user_session:
-        missing.append("TELEGRAM_USER_SESSION")
+    if settings.telegram_app_api_id is None:
+        missing.append("RHAPSODY_TELEGRAM_API_ID")
+    if not settings.telegram_app_api_hash:
+        missing.append("RHAPSODY_TELEGRAM_API_HASH")
     if settings.stt_mode is None:
         missing.append("STT_MODE")
     if settings.stt_mode == "openai" and not settings.openai_api_key:

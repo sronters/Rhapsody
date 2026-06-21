@@ -1,0 +1,46 @@
+{
+  "telegram": {
+    "start": "Rhapsody подключает Telegram-чат к памяти команды.\n\nВыбери язык ниже, затем запусти /setup. Потом отправь голосовое, документ или заметки встречи.\n\nОсновное:\n/meeting — разобрать встречу\n/ask — спросить по памяти\n/tasks — задачи\n/document — добавить документ\n/menu — меню команд",
+    "menu": "Меню Rhapsody\n\nПамять: /ask, /topics, /topic\nВстречи и документы: /meeting, /document\nРабота: /tasks, /task_done, /task_status, /decisions\nКонтроль: /digest_today, /digest_week, /attention, /reminders, /status\nПроекты и люди: /project, /projects, /project_new, /project_use, /members, /people\nЯзык: /language",
+    "setup_required": "Сначала выберите проект: /projects или создайте новый: /new_project Название",
+    "language_prompt": "Выбери язык интерфейса.",
+    "language_saved": "Язык сохранён: английский.",
+    "language_saved_ru": "Язык сохранён: русский.",
+    "language_group_requires_setup": "Сначала подключи эту группу к проекту через /setup, затем можно менять язык группы.",
+    "language_group_requires_manager": "Язык группы может менять только owner или admin проекта.",
+    "setup_success": "Чат подключён.\nАктивный проект: {workspace_name}\nТвоя роль: {role}\n\nДальше можно отправить /meeting, /document или /ask.",
+    "meeting_prompt": "Отправь текст встречи, голосовое, аудио, видео или файл с заметками ({types}).",
+    "document_prompt": "Отправь текст документа или файл ({types}).",
+    "ask_prompt": "Что нужно найти в памяти проекта?",
+    "task_number_prompt": "Отправь номер задачи. Список можно посмотреть через /tasks.",
+    "task_status_prompt": "Отправь номер задачи и статус, например: 2 in_progress.\nСтатусы: open, in_progress, blocked, done, cancelled.",
+    "recordings_are_meetings": "Записи обрабатываются как встречи. Используй /meeting и отправь запись туда.",
+    "live_group_only": "Live-прослушивание доступно только в Telegram-группах.",
+    "call_recording_group_only": "Запись звонков можно подключить только в Telegram-группе."
+  },
+  "live_calls": {
+    "status": {
+      "CONNECTING": "Подключается",
+      "START_REQUESTED": "Запуск запрошен",
+      "STARTING": "Запускается",
+      "LISTENING": "Слушает звонок",
+      "STOP_REQUESTED": "Остановка запрошена",
+      "STOPPING": "Останавливается",
+      "TRANSCRIBING": "Расшифровывает",
+      "ANALYZING": "Анализирует",
+      "JOINED": "Подключён",
+      "CONNECTED_NO_AUDIO": "Подключён, ждёт аудио",
+      "RECORDING": "Идёт запись",
+      "RECONNECTING": "Переподключается",
+      "FINALIZING": "Завершает обработку",
+      "COMPLETED": "Завершено",
+      "FAILED": "Ошибка",
+      "CANCELLED": "Отменено",
+      "NO_AUDIO_FRAMES": "Аудиофреймы не получены"
+    }
+  },
+  "errors": {
+    "rate_limit": "Превышен лимит запросов.",
+    "generic": "Запрос не удалось выполнить. Попробуй ещё раз или проверь логи сервиса."
+  }
+}

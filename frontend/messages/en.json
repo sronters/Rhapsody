@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "title": "Rhapsody Admin",
+    "description": "Enterprise admin console for Rhapsody"
+  },
+  "home": {
+    "eyebrow": "Enterprise Console",
+    "title": "Rhapsody Admin",
+    "description": "Operator surface for tenant management, AI provider controls, audit review, and private deployment settings.",
+    "placeholder": "Enterprise-ready placeholder module.",
+    "language": "Language",
+    "switchTo": "Русский",
+    "sections": [
+      "Organizations",
+      "Workspaces",
+      "Members",
+      "Tasks",
+      "Decisions",
+      "Memory Search",
+      "Provider Keys",
+      "Audit Logs",
+      "Deployment Settings"
+    ]
+  }
+}
